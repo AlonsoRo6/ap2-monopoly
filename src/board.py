@@ -1,7 +1,7 @@
 import json
 import pickle
 from player import Player
-from tile import Tile
+from tile import Tile, build_tile
 
 
 class Board:
@@ -14,12 +14,11 @@ class Board:
         players_json_path: str,
     ): 
         self._tiles: list[Tile] = []
-        self._players = []
         with open(tiles_json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
 
             for item in data:
-                new_tile = Tile(self, item.get('position'), item.get('name'), item.get('type'), item.get('description'))
+                new_tile = build_tile(self,item)
                 self._tiles.append(new_tile)
 
     def players(self) -> list[Player]:
