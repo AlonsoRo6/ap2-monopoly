@@ -1,3 +1,4 @@
+import json
 import pickle
 from player import Player
 from tile import Tile
@@ -11,7 +12,15 @@ class Board:
         chance_json_path: str,
         community_chest_json_path: str,
         players_json_path: str,
-    ): ...
+    ): 
+        self._tiles: list[Tile] = []
+        self._players = []
+        with open(tiles_json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+            for item in data:
+                new_tile = Tile(self, item.get('position'), item.get('name'), item.get('type'), item.get('description'))
+                self._tiles.append(new_tile)
 
     def players(self) -> list[Player]:
         return []
