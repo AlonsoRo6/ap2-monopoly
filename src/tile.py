@@ -27,16 +27,11 @@ class Tile:
         """Handle what happens when a player lands on this tile."""
         pass
 
-    def type(self) -> str: 
-        return self._tile_type
-    def name(self) -> str:
-        return self._name
-    def description(self) -> str:
-        return self._description
-    def position(self) -> int:
-        return self._position
-    def board(self) -> Board:
-        return self._board
+    def type(self) -> str: return self._tile_type
+    def name(self) -> str: return self._name
+    def description(self) -> str: return self._description
+    def position(self) -> int: return self._position
+    def board(self) -> Board: return self._board
 
 
 class Property(Tile):

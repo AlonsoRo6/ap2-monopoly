@@ -1,7 +1,8 @@
 import json
 import pickle
-from player import Player
+from player import Player, build_player
 from tile import Tile, build_tile
+from card import build_card
 
 
 class Board:
@@ -13,19 +14,26 @@ class Board:
         community_chest_json_path: str,
         players_json_path: str,
     ): 
-        self._tiles: list[Tile] = []
-        with open(tiles_json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
 
-            for item in data:
-                new_tile = build_tile(self,item)
-                self._tiles.append(new_tile)
+        with open(tiles_json_path, 'r', encoding='utf-8') as json_tiles:
+            data_tiles = json.load(json_tiles)
+        self._tiles = [build_tile(self,item) for item in data_tiles]
 
-    def players(self) -> list[Player]:
-        return []
+        with open(chance_json_path, 'r', encoding='utf-8') as json_chance:
+            data_chance = json.load(json_chance)
+        self._chance = [build_card(item) for item in data_chance]
 
-    def tiles(self) -> list[Tile]:
-        return []
+        with open(community_chest_json_path, 'r', encoding='utf-8') as json_community:
+            data_community = json.load(json_community)
+        self._community = [build_card(item) for item in data_community]
+
+        with open(players_json_path, 'r', encoding='utf-8') as json_players:
+            data_players = json.load(json_players)
+        self._players = [build_player(self,item,0) for item in data_players]
+
+    def players(self) -> list[Player]: return self._players
+
+    def tiles(self) -> list[Tile]: return self._tiles
 
     def dice(self) -> tuple[int, int]:
         return (1, 1)
