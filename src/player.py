@@ -22,7 +22,13 @@ class Player:
         piece: str,
         color: str,
         index: int,
-    ): ...
+    ): 
+        self._board = board
+        self._name = name
+        self._piece = piece
+        self._color = color
+        self._index = index
+        
 
     def board(self) -> Board:
         return self._board

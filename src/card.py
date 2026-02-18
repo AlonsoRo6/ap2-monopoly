@@ -12,4 +12,6 @@ class Card:
     ) -> None: ...
 
 
-def build_card(data: dict[str, Any]) -> Card: ...
+def build_card(data: dict[str, Any]) -> Card: 
+    return Card(data["id"], data["title"], data["description"], data["action"])
+

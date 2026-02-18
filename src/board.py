@@ -2,7 +2,7 @@ import json
 import pickle
 from player import Player, build_player
 from tile import Tile, build_tile
-from card import build_card
+from deck import Deck
 
 
 class Board:
@@ -18,20 +18,15 @@ class Board:
         with open(tiles_json_path, 'r', encoding='utf-8') as json_tiles:
             data_tiles = json.load(json_tiles)
         self._tiles = [build_tile(self,item) for item in data_tiles]
-
-        with open(chance_json_path, 'r', encoding='utf-8') as json_chance:
-            data_chance = json.load(json_chance)
-        self._chance = [build_card(item) for item in data_chance]
-
-        with open(community_chest_json_path, 'r', encoding='utf-8') as json_community:
-            data_community = json.load(json_community)
-        self._community = [build_card(item) for item in data_community]
+        
+        self._chance = Deck(chance_json_path)
+        self._community = Deck(community_chest_json_path)
 
         with open(players_json_path, 'r', encoding='utf-8') as json_players:
             data_players = json.load(json_players)
         self._players = [build_player(self,item,0) for item in data_players]
 
-    def players(self) -> list[Player]: return self._players
+    def players(self) -> list[Player]: ...
 
     def tiles(self) -> list[Tile]: return self._tiles
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
+from board import Board
+
 if TYPE_CHECKING:
     from board import Board
     from player import Player
@@ -35,7 +37,7 @@ class Tile:
 
 
 class Property(Tile):
-
+    '''Class for all individual properties'''
     def __init__(
         self,
         board: Board,
@@ -46,10 +48,15 @@ class Property(Tile):
         rent: int,
         mortgage: int,
         description: str,
-    ): ...
+    ): 
+        super().__init__(board,position,name,tile_type,description)
+        self._price = price
+        self._rent = rent
+        self._mortgage = mortgage
 
 
 class Street(Property):
+    '''Subclass from the property class for streets'''
     def __init__(
         self,
         board: Board,
@@ -69,12 +76,84 @@ class Street(Property):
         hotel_cost: int,
         mortgage: int,
         description: str,
-    ): ...
+    ): 
+        super().__init__(board,position,name,tile_type,price,rent,mortgage,description)
+        self._color = color
+        self._rent_with_color_set = rent_with_color_set
+        self._rent_with_1_house = rent_with_1_house
+        self._rent_with_2_houses = rent_with_2_houses
+        self._rent_with_3_houses = rent_with_3_houses
+        self._rent_with_4_houses = rent_with_4_houses
+        self._rent_with_hotel = rent_with_hotel
+        self._house_cost = house_cost
+        self._hotelcost = hotel_cost
 
 
-# more subclasses
-...
+class Station(Tile):
+    '''Subclass from the class tile for train stations'''
+    def __init__(
+        self, 
+        board: Board, 
+        position: int, 
+        name: str, 
+        tile_type: str, 
+        price: str,
+        rent: int,
+        rentWith2Stations: int,
+        rentWith3Stations: int,
+        rentWith4Stations: int,
+        description: str,
+    ):
+        super().__init__(board, position, name, tile_type, description)
+        self._price = price
+        self._rent = rent
+        self._rentWith2Stations = rentWith2Stations
+        self._rentWith3Stations = rentWith3Stations
+        self._rentWith4Stations = rentWith4Stations
+
+
+class Utility(Tile):
+    '''Subclass from the class tile for utility tiles'''
+    def __init__(
+        self, 
+        board: Board,
+        position: int, 
+        name: str, 
+        tile_type: str, 
+        price:int, 
+        rentMultiplier:int, 
+        rentMultiplierWithBoth:int, 
+        description: str, 
+        mortgage:int
+        ):
+        super().__init__(board, position, name, tile_type, description)
+        self._price = price
+        self._rentMultiplier = rentMultiplier
+        self._rentMultiplierWithBoth = rentMultiplierWithBoth
+        self._mortgage = mortgage
+
+
+class Tax(Tile):
+    '''Subclass from the tile class for tax tiles'''
+    def __init__(self, board: Board, position: int, name: str, tile_type: str, amount:int, description: str):
+        super().__init__(board, position, name, tile_type, description)
+        self._amount = amount
+
 
 
 def build_tile(board: Board, data: dict[str, Any]) -> Tile:
-    return Tile(board, data.get('position',''), data.get('name',''), data.get('type',''), data.get('description',''))
+    tile_type = data["type"]
+
+    if tile_type == 'property':
+        return Property(board, data['position'], data['name'], data['type'], data["price"], data["rent"], data["mortgage"], data['description'])
+    elif tile_type == 'tax':
+        return Tax(board, data['position'], data['name'], data['type'], data["amount"], data['description'])
+    elif tile_type == 'station':
+        return Station(board, data['position'], data['name'], data['type'], data["price"], data["rent"], data["rentWith2Stations"], data["rentWith3Stations"], data["rentWith4Stations"], data["description"])
+    elif tile_type == 'utility':
+        return Utility(board, data['position'], data['name'], data['type'], data["price"], data["rentMultiplier"], data["rentMultiplierWithBoth"], data["description"], data['mortgage'])
+    else:     
+        return Tile(board, data['position'], data['name'], data['type'], data['description'])
+
+    
+
