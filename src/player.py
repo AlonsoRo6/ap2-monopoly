@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from tile import Property
+import const
 
 if TYPE_CHECKING:
     from board import Board
@@ -28,7 +29,9 @@ class Player:
         self._piece = piece
         self._color = color
         self._index = index
-        
+        self._position = 0
+        self._money = const.START_MONEY
+
 
     def board(self) -> Board:
         return self._board
@@ -63,7 +66,16 @@ class Player:
 
     def owned_properties(self) -> list[Property]:
         return []
-
+    
+    def move(self, steps:int) -> None:
+        '''Experimntal method to move a player across the board'''
+        old_position = self._position
+        self._position = (old_position + steps) % 40
+        if self._position < old_position: #falta afegir que no hagi anat a la presó
+            self._money += const.GO_SALARY
+            print(f"You've gone through the GO tile and earned {const.GO_SALARY}$")
+        current_tile = self._board.get_tile_index(self._position)
+        print(current_tile.name())
 
 def build_player(board: Board, data: dict[str, Any], index: int) -> Player:
     """Build a Player from JSON-like dict with 'name', 'piece', and 'color' keys."""

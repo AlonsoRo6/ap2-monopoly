@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
-from board import Board
 
 if TYPE_CHECKING:
     from board import Board
@@ -27,7 +26,19 @@ class Tile:
 
     def land_on(self, player: Player) -> None:
         """Handle what happens when a player lands on this tile."""
-        pass
+        print(f"You've landed on {self._name}")
+        if self._tile_type == "property":
+            ...
+        elif self._tile_type == "station":
+            ...
+        elif self._tile_type == "tax":
+            ...
+        elif self._tile_type == "utility":
+            ...
+        elif self._tile_type == "community_chest" or self._tile_type == "chance":
+            ...
+        else:
+            ...
 
     def type(self) -> str: return self._tile_type
     def name(self) -> str: return self._name
@@ -47,9 +58,9 @@ class Property(Tile):
         price: int,
         rent: int,
         mortgage: int,
-        description: str,
+        #description: str,
     ): 
-        super().__init__(board,position,name,tile_type,description)
+        super().__init__(board,position,name,tile_type,'')
         self._price = price
         self._rent = rent
         self._mortgage = mortgage
@@ -75,9 +86,9 @@ class Street(Property):
         house_cost: int,
         hotel_cost: int,
         mortgage: int,
-        description: str,
+        #description: str,
     ): 
-        super().__init__(board,position,name,tile_type,price,rent,mortgage,description)
+        super().__init__(board,position,name,tile_type,price,rent,mortgage)
         self._color = color
         self._rent_with_color_set = rent_with_color_set
         self._rent_with_1_house = rent_with_1_house
@@ -102,9 +113,9 @@ class Station(Tile):
         rentWith2Stations: int,
         rentWith3Stations: int,
         rentWith4Stations: int,
-        description: str,
+        #description: str,
     ):
-        super().__init__(board, position, name, tile_type, description)
+        super().__init__(board, position, name, tile_type, '')
         self._price = price
         self._rent = rent
         self._rentWith2Stations = rentWith2Stations
@@ -145,11 +156,11 @@ def build_tile(board: Board, data: dict[str, Any]) -> Tile:
     tile_type = data["type"]
 
     if tile_type == 'property':
-        return Property(board, data['position'], data['name'], data['type'], data["price"], data["rent"], data["mortgage"], data['description'])
+        return Property(board, data['position'], data['name'], data['type'], data["price"], data["rent"], data["mortgage"])
     elif tile_type == 'tax':
         return Tax(board, data['position'], data['name'], data['type'], data["amount"], data['description'])
     elif tile_type == 'station':
-        return Station(board, data['position'], data['name'], data['type'], data["price"], data["rent"], data["rentWith2Stations"], data["rentWith3Stations"], data["rentWith4Stations"], data["description"])
+        return Station(board, data['position'], data['name'], data['type'], data["price"], data["rent"], data["rentWith2Stations"], data["rentWith3Stations"], data["rentWith4Stations"])
     elif tile_type == 'utility':
         return Utility(board, data['position'], data['name'], data['type'], data["price"], data["rentMultiplier"], data["rentMultiplierWithBoth"], data["description"], data['mortgage'])
     else:     

@@ -1,9 +1,16 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 import json
 import pickle
-from player import Player, build_player
-from tile import Tile, build_tile
-from deck import Deck
 
+if TYPE_CHECKING:
+    from player import Player
+    from tile import Tile
+
+from deck import Deck
+from tile import build_tile
+from player import build_player
 
 class Board:
 
@@ -18,7 +25,7 @@ class Board:
         with open(tiles_json_path, 'r', encoding='utf-8') as json_tiles:
             data_tiles = json.load(json_tiles)
         self._tiles = [build_tile(self,item) for item in data_tiles]
-        
+    
         self._chance = Deck(chance_json_path)
         self._community = Deck(community_chest_json_path)
 
@@ -42,6 +49,11 @@ class Board:
         return 10
 
     def play(self) -> None: ...
+
+
+    def get_tile_index(self, index: int) -> Tile:
+        '''Method to get a tile given its index'''
+        return self._tiles[index]
 
 
 def save_board(board: Board, pickle_path: str) -> None:
