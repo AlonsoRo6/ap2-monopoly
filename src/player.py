@@ -33,49 +33,47 @@ class Player:
         self._money = const.START_MONEY
 
 
-    def board(self) -> Board:
-        return self._board
+    def board(self) -> Board: return self._board
 
-    def name(self) -> str:
-        return self._name
+    def name(self) -> str: return self._name
 
-    def piece(self) -> str:
-        return self._piece
+    def piece(self) -> str: return self._piece
 
-    def color(self) -> str:
-        return self._color
+    def color(self) -> str: return self._color
 
-    def index(self) -> int:
-        return self._index
+    def index(self) -> int: return self._index
 
     def broke(self) -> bool:
         """Return True if the player has negative money."""
         return self._money < 0
 
-    def money(self) -> int:
-        return self._money
+    def money(self) -> int: return self._money
 
-    def position(self) -> int:
-        return self._position
+    def position(self) -> int: return self._position
 
-    def get_out_of_jail_free_cards(self) -> int:
-        return 0
+    def get_out_of_jail_free_cards(self) -> int: return 0
 
-    def turns_in_prison(self) -> int:
-        return 0
+    def turns_in_prison(self) -> int: return 0
 
-    def owned_properties(self) -> list[Property]:
-        return []
+    def owned_properties(self) -> list[Property]: return []
     
+    def add_money(self, amount:int) -> None: self._money += amount
+
+
     def move(self, steps:int) -> None:
         '''Experimntal method to move a player across the board'''
         old_position = self._position
         self._position = (old_position + steps) % 40
+
         if self._position < old_position: #falta afegir que no hagi anat a la presó
-            self._money += const.GO_SALARY
+            self.add_money(const.GO_SALARY)
             print(f"You've gone through the GO tile and earned {const.GO_SALARY}$")
+            print(self._money)
+
         current_tile = self._board.get_tile_index(self._position)
         print(current_tile.name())
+
+
 
 def build_player(board: Board, data: dict[str, Any], index: int) -> Player:
     """Build a Player from JSON-like dict with 'name', 'piece', and 'color' keys."""

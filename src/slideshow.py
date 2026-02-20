@@ -1,7 +1,11 @@
 """
 Generate an HTML page to display a slideshow of SVGs with navigation buttons.
 
-Usage: python3 slideshow.py page.html *.svg
+Usage: python3 src/slideshow.py page.html *.svg
+
+
+file:///Users/xavi/Desktop/ap2-monopoly-2026/page.html
+
 """
 
 import sys

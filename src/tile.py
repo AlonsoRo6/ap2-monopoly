@@ -55,15 +55,16 @@ class Property(Tile):
         position: int,
         name: str,
         tile_type: str,
+        color:str,
         price: int,
         rent: int,
         mortgage: int,
-        #description: str,
     ): 
         super().__init__(board,position,name,tile_type,'')
         self._price = price
         self._rent = rent
         self._mortgage = mortgage
+        self.color = color
 
 
 class Street(Property):
@@ -86,10 +87,8 @@ class Street(Property):
         house_cost: int,
         hotel_cost: int,
         mortgage: int,
-        #description: str,
     ): 
-        super().__init__(board,position,name,tile_type,price,rent,mortgage)
-        self._color = color
+        super().__init__(board,position,name,tile_type,color,price,rent,mortgage)
         self._rent_with_color_set = rent_with_color_set
         self._rent_with_1_house = rent_with_1_house
         self._rent_with_2_houses = rent_with_2_houses
@@ -113,7 +112,6 @@ class Station(Tile):
         rentWith2Stations: int,
         rentWith3Stations: int,
         rentWith4Stations: int,
-        #description: str,
     ):
         super().__init__(board, position, name, tile_type, '')
         self._price = price
@@ -156,7 +154,7 @@ def build_tile(board: Board, data: dict[str, Any]) -> Tile:
     tile_type = data["type"]
 
     if tile_type == 'property':
-        return Property(board, data['position'], data['name'], data['type'], data["price"], data["rent"], data["mortgage"])
+        return Property(board, data['position'], data['name'], data['type'], data["color"], data["price"], data["rent"], data["mortgage"])
     elif tile_type == 'tax':
         return Tax(board, data['position'], data['name'], data['type'], data["amount"], data['description'])
     elif tile_type == 'station':

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from board import Board
 import random
-import player
+#import player
 
 
 def main() -> None:
@@ -12,11 +12,11 @@ def main() -> None:
         players_json_path="src/data/players.json",
     )
 
-    p1 = player.build_player(board, {"name": "Alonso", "piece": "Cotxe", "color": "Red"}, 0)  # jugador de proves
+    '''p1 = player.build_player(board, {"name": "Alonso", "piece": "Cotxe", "color": "Red"}, 0)  # jugador de proves
     p1.move(20)
-    p1.move(25)
+    p1.move(25)'''
     random.seed(25)
-    board.play()
+    board.play(4)
 
 
 if __name__ == "__main__":
