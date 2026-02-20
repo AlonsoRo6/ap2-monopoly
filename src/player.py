@@ -72,9 +72,10 @@ class Player:
             print(self._money)
         current_tile = self._board.get_tile_index(self._position)
         current_tile.land_on(self)
+        print(f'La nova posició és {self._position}')
 
 
 
-def build_player(board: Board, data: dict[str, Any], index: int) -> Player:
+def build_player(board: Board, data: dict[str, Any]) -> Player:
     """Build a Player from JSON-like dict with 'name', 'piece', and 'color' keys."""
-    return Player(board, data["name"], data["piece"], data["color"], index)
+    return Player(board, data["name"], data["piece"], data["color"], data["index"])

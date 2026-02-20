@@ -13,7 +13,6 @@ from deck import Deck
 from tile import build_tile
 from player import build_player
 from draw import draw
-import const
 
 
 class Board:
@@ -23,7 +22,7 @@ class Board:
         tiles_json_path: str,
         chance_json_path: str,
         community_chest_json_path: str,
-        players_json_path: str,
+        players_json_path: str
     ): 
 
         with open(tiles_json_path, 'r', encoding='utf-8') as json_tiles:
@@ -35,7 +34,11 @@ class Board:
 
         with open(players_json_path, 'r', encoding='utf-8') as json_players:
             data_players = json.load(json_players)
-        self._players = [build_player(self,item,0) for item in data_players]
+        self._players = [build_player(self,item) for item in data_players]
+        
+        self._current_player_index = 0
+        self._dice1 = 0
+        self._dice2 = 0
 
     def players(self) -> list[Player]: 
         return self._players
@@ -43,12 +46,10 @@ class Board:
     def tiles(self) -> list[Tile]: return self._tiles
 
     def dice(self) -> tuple[int, int]:
-        dice1 = random.randint(1,6)
-        dice2 = random.randint(1,6)
-        return (dice1, dice2)
+        return (self._dice1, self._dice2)
 
     def current_player(self) -> Player:
-        return self._players[0] 
+        return self._players[self._current_player_index]
 
     def num_tiles(self) -> int:
         return 40
@@ -57,24 +58,29 @@ class Board:
         return 10
 
     def play(self,total_turns:int) -> None:
-        num_players = const.MAX_PLAYERS
 
         draw(self, "tauler-000.svg")
-
-        for turn_count in range(total_turns):
-            actual_player = self._players[turn_count%num_players]
+        numero_prova_taulell = 0
+        
+        for _ in range(total_turns):
+            actual_player = self.current_player()
             
-            dice1,dice2 = 0,0
-            while dice1 == dice2: #Tirades dobles
-                dice1, dice2 = self.dice()
-                total_dice = dice1 + dice2
+            self._dice1, self._dice2 = 0,0
+            while self._dice1 == self._dice2: #Tirades dobles
+                self._dice1, self._dice2 = random.randint(1,6), random.randint(1,6)
                 
-                print(f'{actual_player.name()} ha tret un {dice1} i un {dice2}')
+                total_dice = self._dice1 + self._dice2
+                print(f'{actual_player.name()} ha tret un {self._dice1} i un {self._dice2}')
                 actual_player.move(total_dice)
                 
-                filename = f"tauler-{turn_count + 1:03d}.svg"
+                filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
                 draw(self, filename)
-
+                print()
+                numero_prova_taulell += 1 #Nova tirada de daus -> nou taulell
+            
+            self._current_player_index += 1 #Passem al següent jugador
+            if self._current_player_index == 4:
+                self._current_player_index = 0
 
     def get_tile_index(self, index: int) -> Tile:
         '''Method to get a tile given its index'''

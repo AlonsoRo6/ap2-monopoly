@@ -15,7 +15,7 @@ def main() -> None:
     '''p1 = player.build_player(board, {"name": "Alonso", "piece": "Cotxe", "color": "Red"}, 0)  # jugador de proves
     p1.move(20)
     p1.move(25)'''
-    random.seed(25)
+    random.seed(25)  
     board.play(20)
 
 

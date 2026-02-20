@@ -2,21 +2,27 @@
   {
     "name": "Jordi",
     "piece": "🚘",
-    "color": "LightCoral"
+    "color": "LightCoral",
+    "index": 0
   },
   {
     "name": "Mireia",
     "piece": "🐧",
-    "color": "LightBlue"
+    "color": "LightBlue",
+    "index": 1
+
   },
   {
     "name": "Arnau",
     "piece": "🛩",
-    "color": "Silver"
+    "color": "Silver",
+    "index": 2
+
   },
   {
     "name": "Marta",
     "piece": "🐈",
-    "color": "Gold"
+    "color": "Gold",
+    "index": 3
   }
 ]
