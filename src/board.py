@@ -13,6 +13,7 @@ from deck import Deck
 from tile import build_tile
 from player import build_player
 from draw import draw
+import const
 
 
 class Board:
@@ -32,9 +33,13 @@ class Board:
         self._chance = Deck(chance_json_path)
         self._community = Deck(community_chest_json_path)
 
+        self._number_players = int(input('Number of players: ')) 
+        assert 0 < self._number_players <= const.MAX_PLAYERS, '0 < number of players <= MAX_PLAYERS'
+
         with open(players_json_path, 'r', encoding='utf-8') as json_players:
             data_players = json.load(json_players)
         self._players = [build_player(self,item) for item in data_players]
+        self._players = self._players[:self._number_players]
         
         self._current_player_index = 0
         self._dice1 = 0
@@ -79,7 +84,7 @@ class Board:
                 numero_prova_taulell += 1 #Nova tirada de daus -> nou taulell
             
             self._current_player_index += 1 #Passem al següent jugador
-            if self._current_player_index == 4:
+            if self._current_player_index == self._number_players:
                 self._current_player_index = 0
 
     def get_tile_index(self, index: int) -> Tile:
