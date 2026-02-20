@@ -43,7 +43,9 @@ class Board:
     def tiles(self) -> list[Tile]: return self._tiles
 
     def dice(self) -> tuple[int, int]:
-        return (1, 1)
+        dice1 = random.randint(1,6)
+        dice2 = random.randint(1,6)
+        return (dice1, dice2)
 
     def current_player(self) -> Player:
         return self._players[0] 
@@ -56,17 +58,23 @@ class Board:
 
     def play(self,total_turns:int) -> None:
         num_players = const.MAX_PLAYERS
-    
+
+        draw(self, "tauler-000.svg")
+
         for turn_count in range(total_turns):
             actual_player = self._players[turn_count%num_players]
+            
+            dice1,dice2 = 0,0
+            while dice1 == dice2: #Tirades dobles
+                dice1, dice2 = self.dice()
+                total_dice = dice1 + dice2
+                
+                print(f'{actual_player.name()} ha tret un {dice1} i un {dice2}')
+                actual_player.move(total_dice)
+                
+                filename = f"tauler-{turn_count + 1:03d}.svg"
+                draw(self, filename)
 
-            dice1 = random.randint(1, 6)
-            dice2 = random.randint(1, 6)
-            total_dice = dice1 + dice2
-            print(f'Ha tret un {dice1} i un {dice2}')
-            actual_player.move(total_dice)
-            draw(self, "board.svg")
-            input("Prem Enter per al següent torn...")
 
     def get_tile_index(self, index: int) -> Tile:
         '''Method to get a tile given its index'''

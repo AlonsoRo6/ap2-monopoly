@@ -26,19 +26,18 @@ class Tile:
 
     def land_on(self, player: Player) -> None:
         """Handle what happens when a player lands on this tile."""
-        print(f"You've landed on {self._name}")
         if self._tile_type == "property":
-            ...
+            print(f"You've landed on a property")
         elif self._tile_type == "station":
-            ...
+            print(f"You've landed on a station")
         elif self._tile_type == "tax":
-            ...
+            print(f"You've landed on tax")
         elif self._tile_type == "utility":
-            ...
+            print(f"You've landed on a utility")
         elif self._tile_type == "community_chest" or self._tile_type == "chance":
-            ...
+            print(f"You've landed on a card")
         else:
-            ...
+            print(f"You've landed else")
 
     def type(self) -> str: return self._tile_type
     def name(self) -> str: return self._name

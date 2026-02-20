@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from board import Board
 
 
+
 class Player:
     _board: Board
     _name: str
@@ -69,9 +70,8 @@ class Player:
             self.add_money(const.GO_SALARY)
             print(f"You've gone through the GO tile and earned {const.GO_SALARY}$")
             print(self._money)
-
         current_tile = self._board.get_tile_index(self._position)
-        print(current_tile.name())
+        current_tile.land_on(self)
 
 
 
