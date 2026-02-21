@@ -32,6 +32,7 @@ class Player:
         self._index = index
         self._position = 0
         self._money = const.START_MONEY
+        self._owned_properties:list[Property] = []
 
 
     def board(self) -> Board: return self._board
@@ -56,10 +57,13 @@ class Player:
 
     def turns_in_prison(self) -> int: return 0
 
-    def owned_properties(self) -> list[Property]: return []
+    def owned_properties(self) -> list[Property]: return self._owned_properties
     
     def add_money(self, amount:int) -> None: self._money += amount
 
+    def new_property(self, property: Property) -> None:
+        self._owned_properties.append(property)
+        
 
     def move(self, steps:int) -> None:
         '''Experimntal method to move a player across the board'''
@@ -72,7 +76,11 @@ class Player:
             print(self._money)
         current_tile = self._board.get_tile_index(self._position)
         current_tile.land_on(self)
+
         print(f'La nova posició és {self._position}')
+
+    def move_to(self,go_position:int) -> None:
+        self._position = go_position
 
 
 

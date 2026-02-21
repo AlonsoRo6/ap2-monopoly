@@ -26,7 +26,7 @@ class Tile:
 
     def land_on(self, player: Player) -> None:
         """Handle what happens when a player lands on this tile."""
-        if self._tile_type == "property":
+        if self._tile_type == "property":            
             print(f"You've landed on a property")
         elif self._tile_type == "station":
             print(f"You've landed on a station")
@@ -60,10 +60,21 @@ class Property(Tile):
         mortgage: int,
     ): 
         super().__init__(board,position,name,tile_type,'')
-        self._price = price
+        self.price = price
         self._rent = rent
         self._mortgage = mortgage
         self.color = color
+        self.owner: Player | None = None
+        self.is_mortgaged = False
+
+    def get_owner(self) -> Player | None:
+        return self.owner
+    
+    def is_tile_mortgaged(self) -> bool:
+        return self.is_mortgaged
+    
+    def get_price(self) -> int:
+        return self.price
 
 
 class Street(Property):
@@ -96,9 +107,28 @@ class Street(Property):
         self._rent_with_hotel = rent_with_hotel
         self._house_cost = house_cost
         self._hotelcost = hotel_cost
+        
+    def land_on(self, player:Player) -> None:
+        owner = self.get_owner()
+        if owner == None:
+            if player.money() > self.get_price():
+                self.owner = player
+                player.add_money(-self.get_price())
+                player.new_property(self)
+        elif owner == player:
+            pass
+        else:
+            if not self.is_tile_mortgaged():
+                rent= self.get_rent()
+                player.add_money(-rent)
+                owner.add_money(rent)
+    
 
+    def get_rent(self) -> int: return self._rent #falta quan hi ha cases o hotel
 
-class Station(Tile):
+        
+
+class Station(Property):
     '''Subclass from the class tile for train stations'''
     def __init__(
         self, 
@@ -106,21 +136,20 @@ class Station(Tile):
         position: int, 
         name: str, 
         tile_type: str, 
-        price: str,
+        price: int,
         rent: int,
         rentWith2Stations: int,
         rentWith3Stations: int,
         rentWith4Stations: int,
+        mortgage: int
     ):
-        super().__init__(board, position, name, tile_type, '')
-        self._price = price
-        self._rent = rent
+        super().__init__(board, position, name, tile_type, '', price, rent, mortgage)
         self._rentWith2Stations = rentWith2Stations
         self._rentWith3Stations = rentWith3Stations
         self._rentWith4Stations = rentWith4Stations
 
 
-class Utility(Tile):
+class Utility(Property):
     '''Subclass from the class tile for utility tiles'''
     def __init__(
         self, 
@@ -134,11 +163,11 @@ class Utility(Tile):
         description: str, 
         mortgage:int
         ):
-        super().__init__(board, position, name, tile_type, description)
-        self._price = price
+        super().__init__(board, position, name, tile_type, '', price, 0, mortgage)
+        
         self._rentMultiplier = rentMultiplier
         self._rentMultiplierWithBoth = rentMultiplierWithBoth
-        self._mortgage = mortgage
+        self._description = description
 
 
 class Tax(Tile):
@@ -153,11 +182,11 @@ def build_tile(board: Board, data: dict[str, Any]) -> Tile:
     tile_type = data["type"]
 
     if tile_type == 'property':
-        return Property(board, data['position'], data['name'], data['type'], data["color"], data["price"], data["rent"], data["mortgage"])
+        return Street(board, data['position'], data['name'], data['type'], data["color"], data["price"], data["rent"], data["rentWithColorSet"], data["rentWith1House"], data["rentWith2Houses"], data["rentWith3Houses"], data["rentWith4Houses"], data["rentWithHotel"], data["houseCost"], data["hotelCost"], data["mortgage"])
     elif tile_type == 'tax':
         return Tax(board, data['position'], data['name'], data['type'], data["amount"], data['description'])
     elif tile_type == 'station':
-        return Station(board, data['position'], data['name'], data['type'], data["price"], data["rent"], data["rentWith2Stations"], data["rentWith3Stations"], data["rentWith4Stations"])
+        return Station(board, data['position'], data['name'], data['type'], data["price"], data["rent"], data["rentWith2Stations"], data["rentWith3Stations"], data["rentWith4Stations"], data["mortgage"])
     elif tile_type == 'utility':
         return Utility(board, data['position'], data['name'], data['type'], data["price"], data["rentMultiplier"], data["rentMultiplierWithBoth"], data["description"], data['mortgage'])
     else:     

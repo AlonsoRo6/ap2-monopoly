@@ -62,6 +62,7 @@ class Board:
     def jail_position(self) -> int:
         return 10
 
+    
     def play(self,total_turns:int) -> None:
 
         draw(self, "tauler-000.svg")
@@ -71,9 +72,23 @@ class Board:
             actual_player = self.current_player()
             
             self._dice1, self._dice2 = 0,0
+            comptador_dobles = 0
             while self._dice1 == self._dice2: #Tirades dobles
+                
                 self._dice1, self._dice2 = random.randint(1,6), random.randint(1,6)
                 
+                if self._dice1 == self._dice2:
+                    comptador_dobles += 1
+
+                if comptador_dobles == 3:
+                    print('gone to prison')
+                    actual_player.move_to(self.jail_position())
+                    
+                    filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                    draw(self, filename)
+                    numero_prova_taulell += 1
+                    break
+
                 total_dice = self._dice1 + self._dice2
                 print(f'{actual_player.name()} ha tret un {self._dice1} i un {self._dice2}')
                 actual_player.move(total_dice)
@@ -82,10 +97,13 @@ class Board:
                 draw(self, filename)
                 print()
                 numero_prova_taulell += 1 #Nova tirada de daus -> nou taulell
+
             
+
             self._current_player_index += 1 #Passem al següent jugador
             if self._current_player_index == self._number_players:
                 self._current_player_index = 0
+
 
     def get_tile_index(self, index: int) -> Tile:
         '''Method to get a tile given its index'''

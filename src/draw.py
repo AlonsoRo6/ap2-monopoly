@@ -235,7 +235,7 @@ def draw_board_tiles(d: dw.Drawing, board: Board, show_number: bool = False) -> 
                 if show_number:
                     label = str(owner.index + 1)
                 else:
-                    label = owner.piece
+                    label = owner.piece()
                 d.append(
                     dw.Text(
                         label,
