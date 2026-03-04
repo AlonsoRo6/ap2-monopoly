@@ -5,7 +5,7 @@ from strategy import *
 
 if TYPE_CHECKING:
     from board import Board
-    from tile import Property
+    from tile import Property, Tile
 
 
 
@@ -34,6 +34,8 @@ class Player:
         self._position = 0
         self._money = const.START_MONEY
         self._owned_properties:list[Property] = []
+        self._get_out_of_jail_free_cards = 0
+        self._in_prison = False
 
         if self._index % 2 == 0:
             self._strategy = "Advanced"
@@ -71,7 +73,7 @@ class Player:
         '''Returns the player's position'''
         return self._position
 
-    def get_out_of_jail_free_cards(self) -> int: return 0
+    def get_out_of_jail_free_cards(self) -> int: return self._get_out_of_jail_free_cards
 
     def turns_in_prison(self) -> int: return 0
 
@@ -116,7 +118,7 @@ class Player:
             print(f"You've gone through the GO tile and earned {const.GO_SALARY}$")
             print(self._money)
         current_tile = self._board.get_tile_index(self._position)
-        current_tile.land_on(self)
+        current_tile.land_on(self,1)
 
         print(f'La nova posició és {self._position}')
 
@@ -127,6 +129,29 @@ class Player:
     def strategy(self) -> str:
         '''Returns a string with the name of the player's strategy'''
         return self._strategy
+
+    def find_next_tile_of_type(self, board:Board, tile_type: str) -> Tile:
+        tiles = board.tiles()
+        num_tiles = len(tiles)
+        for i in range(1, num_tiles + 1):
+            next_index = (self.position() + i) % num_tiles
+            tile = tiles[next_index]
+            if tile.type() == tile_type:
+                return tile
+        
+        return tiles[0]
+    
+    def add_get_out_of_jail_card(self) -> None:
+        self._get_out_of_jail_free_cards += 1
+
+    def put_in_prison(self) -> None:
+        self._in_prison = True
+
+    def release_from_prison(self) -> None:
+        self._in_prison = False
+
+    def is_in_prison(self) -> bool:
+        return self._in_prison
 
 
 def build_player(board: Board, data: dict[str, Any]) -> Player:

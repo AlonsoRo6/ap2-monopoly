@@ -27,7 +27,7 @@ class Tile:
         self._tile_type = tile_type
         self._description = description
 
-    def land_on(self, player: Player) -> None:
+    def land_on(self, player: Player, rent_multiplier:int) -> None:
         """Handle what happens when a player lands on this tile."""
         if self._tile_type == "property":            
             print(f"You've landed on a property")
@@ -96,7 +96,29 @@ class Property(Tile):
         '''Returns the property rent'''
         return self._rent
     
-    def land_on(self, player: Player) -> None:
+    def get_mortgage(self) -> int:
+        return self._mortgage
+    
+    def can_mortgage(self) -> bool:
+        '''Returns true if the property can be mortgaged'''
+        owner = self.get_owner()
+        assert owner is not None
+        if isinstance(self,Street) and self.amount_houses() > 0:
+            return False
+        return True
+
+    def get_unmortgage_price(self) -> int:
+        '''Return the price that has to be paid for the property to be unmortgaged'''
+        return int(self.get_mortgage() + self.get_mortgage() * 0.1)
+
+    def mortgage(self) -> None:
+        self.is_mortgaged = True
+    
+    def unmortgage(self) -> None:
+        self.is_mortgaged = False
+
+
+    def land_on(self, player: Player, rent_multiplier:int) -> None:
         '''Handles what happens when a player lands on a property'''
         owner = self.get_owner()
         if owner == None:
@@ -109,8 +131,8 @@ class Property(Tile):
         else:
             if not self.is_tile_mortgaged():
                 rent = self.get_rent()
-                owner.add_money(rent)
-                player.add_money(-rent)
+                owner.add_money(rent*rent_multiplier)
+                player.add_money(-rent*rent_multiplier)
         
         for prop in player.owned_properties():
             if should_build_house(player,prop):

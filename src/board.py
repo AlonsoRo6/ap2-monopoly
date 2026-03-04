@@ -116,8 +116,6 @@ class Board:
         '''Method to get a tile given its index'''
         return self._tiles[index]
     
-
-
 def save_board(board: Board, pickle_path: str) -> None:
     with open(pickle_path, "wb") as f:
         pickle.dump(board, f)
