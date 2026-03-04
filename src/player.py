@@ -1,10 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any
-from tile import Property
 import const
+from strategy import *
 
 if TYPE_CHECKING:
     from board import Board
+    from tile import Property
 
 
 
@@ -34,37 +35,77 @@ class Player:
         self._money = const.START_MONEY
         self._owned_properties:list[Property] = []
 
+        if self._index % 2 == 0:
+            self._strategy = "Advanced"
+        else:
+            self._strategy = "Simple"
+
 
     def board(self) -> Board: return self._board
 
-    def name(self) -> str: return self._name
+    def name(self) -> str: 
+        '''Returns the player's name'''
+        return self._name
 
-    def piece(self) -> str: return self._piece
+    def piece(self) -> str: 
+        '''Returns the player's piece'''
+        return self._piece
 
-    def color(self) -> str: return self._color
+    def color(self) -> str: 
+        '''Returns the player's color'''
+        return self._color
 
-    def index(self) -> int: return self._index
+    def index(self) -> int: 
+        '''Returns the player's index'''
+        return self._index
 
     def broke(self) -> bool:
         """Return True if the player has negative money."""
         return self._money < 0
 
-    def money(self) -> int: return self._money
+    def money(self) -> int: 
+        '''Returns the player's money'''
+        return self._money
 
-    def position(self) -> int: return self._position
+    def position(self) -> int: 
+        '''Returns the player's position'''
+        return self._position
 
     def get_out_of_jail_free_cards(self) -> int: return 0
 
     def turns_in_prison(self) -> int: return 0
 
-    def owned_properties(self) -> list[Property]: return self._owned_properties
+    def owned_properties(self) -> list[Property]: 
+        '''Returns a list of Property with all properties owned by the player'''
+        return self._owned_properties
+
+    def has_color_set(self, color:str) -> bool:
+        '''Returns True if the player has the color set of the color given'''
+        amount = sum(1 for property in self.owned_properties() if getattr(property,"color",None) == color)
+        
+        total_of_color = sum(1 for t in self.board().tiles() if getattr(t, "color", None) == color)
+
+        return amount == total_of_color
+
+    def amount_stations(self) -> int:
+        '''Returns the amount of stations the player has'''
+        amount = sum(1 for property in self.owned_properties() if property.type() == "station")
+        return amount
+
+    def has_all_utilities(self) -> bool:
+        '''Returns True if the player has both utilities'''
+        amount = sum(1 for property in self.owned_properties() if property.type() == "utility")
+        return amount == 2
     
-    def add_money(self, amount:int) -> None: self._money += amount
+    def add_money(self, amount:int) -> None: 
+        '''Method that adds the given amount to the player's money'''
+        self._money += amount
 
     def new_property(self, property: Property) -> None:
+        '''Method that adds the given property to the player's list of owned properties'''
         self._owned_properties.append(property)
-        
 
+        
     def move(self, steps:int) -> None:
         '''Experimntal method to move a player across the board'''
         old_position = self._position
@@ -80,8 +121,12 @@ class Player:
         print(f'La nova posició és {self._position}')
 
     def move_to(self,go_position:int) -> None:
+        '''Method that moves a player to a given position'''
         self._position = go_position
 
+    def strategy(self) -> str:
+        '''Returns a string with the name of the player's strategy'''
+        return self._strategy
 
 
 def build_player(board: Board, data: dict[str, Any]) -> Player:

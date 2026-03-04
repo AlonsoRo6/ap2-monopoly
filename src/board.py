@@ -46,25 +46,32 @@ class Board:
         self._dice2 = 0
 
     def players(self) -> list[Player]: 
+        '''Returns a list of Player with all players'''
         return self._players
 
-    def tiles(self) -> list[Tile]: return self._tiles
+    def tiles(self) -> list[Tile]: 
+        '''Returns a list of Tile with all tiles'''
+        return self._tiles
 
     def dice(self) -> tuple[int, int]:
+        '''Returns the result of the last dice roll as a tuple'''
         return (self._dice1, self._dice2)
 
     def current_player(self) -> Player:
+        '''Returns the current player as a Player'''
         return self._players[self._current_player_index]
 
     def num_tiles(self) -> int:
+        '''Returns the number of tiles on the board'''
         return 40
 
     def jail_position(self) -> int:
+        '''Returns the jail position on the board'''
         return 10
 
     
     def play(self,total_turns:int) -> None:
-
+        '''Plays'''
         draw(self, "tauler-000.svg")
         numero_prova_taulell = 0
         

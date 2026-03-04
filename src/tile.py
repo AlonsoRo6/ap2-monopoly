@@ -1,6 +1,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
+from player import Player
+from strategy import *
+
 
 if TYPE_CHECKING:
     from board import Board
@@ -39,11 +42,21 @@ class Tile:
         else:
             print(f"You've landed else")
 
-    def type(self) -> str: return self._tile_type
-    def name(self) -> str: return self._name
-    def description(self) -> str: return self._description
-    def position(self) -> int: return self._position
-    def board(self) -> Board: return self._board
+    def type(self) -> str:
+        '''Returns the tile's type'''
+        return self._tile_type
+    def name(self) -> str: 
+        '''Returns the tile's name'''
+        return self._name
+    def description(self) -> str: 
+        '''Returns the tile's description'''
+        return self._description
+    def position(self) -> int: 
+        '''Returns the tile's position'''
+        return self._position
+    def board(self) -> Board: 
+        '''Returns the board'''
+        return self._board
 
 
 class Property(Tile):
@@ -68,13 +81,40 @@ class Property(Tile):
         self.is_mortgaged = False
 
     def get_owner(self) -> Player | None:
+        '''Returns the property owner'''
         return self.owner
     
     def is_tile_mortgaged(self) -> bool:
+        '''Returns true if the property's mortgaged'''
         return self.is_mortgaged
     
     def get_price(self) -> int:
+        '''Returns the property price'''
         return self.price
+    
+    def get_rent(self) -> int:
+        '''Returns the property rent'''
+        return self._rent
+    
+    def land_on(self, player: Player) -> None:
+        '''Handles what happens when a player lands on a property'''
+        owner = self.get_owner()
+        if owner == None:
+            if should_buy_property(player,self):
+                player.add_money(-self.get_price())
+                player.new_property(self)
+                self.owner = player
+        elif owner == player:
+            pass
+        else:
+            if not self.is_tile_mortgaged():
+                rent = self.get_rent()
+                owner.add_money(rent)
+                player.add_money(-rent)
+        
+        for prop in player.owned_properties():
+            if should_build_house(player,prop):
+                ... #implementar compra de cases
 
 
 class Street(Property):
@@ -108,28 +148,84 @@ class Street(Property):
         self._house_cost = house_cost
         self._hotelcost = hotel_cost
         
-    def land_on(self, player:Player) -> None:
+        self._houses = 0    
+
+    def get_rent(self) -> int: 
+        '''Returns the street rent, taking into account all variables'''
         owner = self.get_owner()
-        if owner == None:
-            if player.money() > self.get_price():
-                self.owner = player
-                player.add_money(-self.get_price())
-                player.new_property(self)
-        elif owner == player:
-            pass
+        assert owner != None
+        if owner.has_color_set(self.color):
+            if self.amount_houses() == 0:
+                return self._rent_with_color_set
+            if self.amount_houses() == 1:
+                return self._rent_with_1_house
+            elif self.amount_houses() == 2:
+                return self._rent_with_2_houses
+            elif self.amount_houses() == 3:
+                return self._rent_with_3_houses
+            elif self.amount_houses() == 4:
+                return self._rent_with_4_houses
+            else:
+                return self._rent_with_hotel
         else:
-            if not self.is_tile_mortgaged():
-                rent= self.get_rent()
-                player.add_money(-rent)
-                owner.add_money(rent)
+            return self._rent
+        
+    def buy_house(self) -> None:
+        '''Adds a house to the street'''
+        self._houses += 1
+
+    def sell_house(self) -> None:
+        self._houses -= 1
+
+
+    def amount_houses(self) -> int:
+        '''Returns the amount of houses (5 if hotel) the street has'''
+        return self._houses
+    
+    def can_build_house(self) -> bool:
+        '''Returns true if the player can build a house or hotel on this street'''
+        owner = self.get_owner()
+        assert owner is not None
+        houses = self.amount_houses()
+        
+        if houses > 5: 
+            return False
+        if not owner.has_color_set(self.color):
+            return False 
+        
+        color_set = [street for street in owner.owned_properties()if isinstance(street,Street) and street.color == self.color and street != self]
+        
+        if any([street.is_tile_mortgaged() for street in color_set]):
+            return False
+        
+        houses_same_color = [street.amount_houses() for street in color_set]
+        
+        if houses <= max(houses_same_color):
+            return True
+        
+        return False
+    
+    def can_sell_house(self) -> bool:
+        '''Returns true if the player can sell a house or hotel on this street'''
+        owner = self.get_owner()
+        assert owner is not None
+        houses = self.amount_houses()
+
+        if houses > 1:
+            return False
+
+        color_set = [street for street in owner.owned_properties()if isinstance(street,Street) and street.color == self.color and street != self]
+
+        houses_same_color = [street.amount_houses() for street in color_set]
+
+        if houses >= max(houses_same_color):
+            return True
+        
+        return False
     
 
-    def get_rent(self) -> int: return self._rent #falta quan hi ha cases o hotel
-
-        
-
 class Station(Property):
-    '''Subclass from the class tile for train stations'''
+    '''Subclass from the class Property for train stations'''
     def __init__(
         self, 
         board: Board, 
@@ -148,7 +244,20 @@ class Station(Property):
         self._rentWith3Stations = rentWith3Stations
         self._rentWith4Stations = rentWith4Stations
 
-
+        
+    def get_rent(self) -> int: 
+        '''Returns the station rent, takin into account all variables'''
+        owner = self.get_owner()
+        assert owner != None
+        if owner.amount_stations() == 1:
+            return self._rent
+        elif owner.amount_stations() == 2:
+            return self._rentWith2Stations
+        elif owner.amount_stations() == 3:
+            return self._rentWith3Stations
+        else: 
+            return self._rentWith4Stations
+        
 class Utility(Property):
     '''Subclass from the class tile for utility tiles'''
     def __init__(
@@ -169,9 +278,18 @@ class Utility(Property):
         self._rentMultiplierWithBoth = rentMultiplierWithBoth
         self._description = description
 
+    def get_rent(self) -> int:
+        '''Returns the utility rent, taking into account all variables'''
+        owner = self.get_owner()
+        assert owner != None
+        if owner.has_all_utilities():
+            return sum(self._board.dice()) * 10
+        else: 
+            return sum(self._board.dice()) * 4
+
 
 class Tax(Tile):
-    '''Subclass from the tile class for tax tiles'''
+    '''Subclass from the Property class for tax tiles'''
     def __init__(self, board: Board, position: int, name: str, tile_type: str, amount:int, description: str):
         super().__init__(board, position, name, tile_type, description)
         self._amount = amount
@@ -179,6 +297,7 @@ class Tax(Tile):
 
 
 def build_tile(board: Board, data: dict[str, Any]) -> Tile:
+    '''Build the tile, with a different subclass depending on its type'''
     tile_type = data["type"]
 
     if tile_type == 'property':
