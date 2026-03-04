@@ -36,6 +36,7 @@ class Player:
         self._owned_properties:list[Property] = []
         self._get_out_of_jail_free_cards = 0
         self._in_prison = False
+        self._turns_in_prison = 0
 
         if self._index % 2 == 0:
             self._strategy = "Advanced"
@@ -75,7 +76,7 @@ class Player:
 
     def get_out_of_jail_free_cards(self) -> int: return self._get_out_of_jail_free_cards
 
-    def turns_in_prison(self) -> int: return 0
+    def turns_in_prison(self) -> int: return self._turns_in_prison
 
     def owned_properties(self) -> list[Property]: 
         '''Returns a list of Property with all properties owned by the player'''
@@ -117,9 +118,6 @@ class Player:
             self.add_money(const.GO_SALARY)
             print(f"You've gone through the GO tile and earned {const.GO_SALARY}$")
             print(self._money)
-        
-        current_tile = self._board.get_tile_index(self._position)
-        current_tile.land_on(self,1,board)
 
         print(f'La nova posició és {self._position}')
 
@@ -142,17 +140,27 @@ class Player:
         
         return tiles[0]
     
+
+    #funcions gestió pressó
     def add_get_out_of_jail_card(self) -> None:
         self._get_out_of_jail_free_cards += 1
+
+    def use_get_out_of_jail_card(self) -> None:
+        self._get_out_of_jail_free_cards -= 1
 
     def put_in_prison(self) -> None:
         self._in_prison = True
 
     def release_from_prison(self) -> None:
         self._in_prison = False
+        self._turns_in_prison = 0
 
     def is_in_prison(self) -> bool:
         return self._in_prison
+
+    def add_turn_in_prison(self) -> None:
+        self._turns_in_prison += 1
+
 
 
 def build_player(board: Board, data: dict[str, Any]) -> Player:

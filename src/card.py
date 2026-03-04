@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from player import Player
     from board import Board
-    from tile import Street
 
 from typing import Any
 
@@ -123,6 +122,7 @@ class Pay_Per_Property(Card):
         return self._amount_per_hotel
     
     def execute(self, player:Player, board:Board) -> None:
+        from tile import Street
         for property in player.owned_properties():
             if isinstance(property,Street):
                 houses = property.amount_houses()

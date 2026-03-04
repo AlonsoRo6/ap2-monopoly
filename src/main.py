@@ -17,7 +17,7 @@ def main() -> None:
     p1.move(25)'''
 
     random.seed(25)  
-    board.play(20)
+    board.play(40)
 
 
 if __name__ == "__main__":

@@ -40,7 +40,7 @@ class Tile:
             print(f"You've landed on a card")
         elif self._tile_type == "special" and self._description == "Go directly to jail":
             player.move_to(10)
-            
+            player.put_in_prison()
         else:
             print(f"You've landed else")
 

@@ -90,35 +90,64 @@ class Board:
                 if comptador_dobles == 3:
                     print('gone to prison')
                     actual_player.move_to(self.jail_position())
+                    actual_player.put_in_prison()
                     
                     filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
                     draw(self, filename)
                     numero_prova_taulell += 1
                     break
+                
+                
+                if actual_player.is_in_prison(): #dues maneres de sortir de la presó, i si no dibuixem i passem torn
+                    print("A LA PRESÖ:",actual_player.name())
+                    actual_player.add_turn_in_prison()
 
-                total_dice = self._dice1 + self._dice2
+                    if comptador_dobles > 0:
+                        actual_player.release_from_prison()
+                    elif actual_player.get_out_of_jail_free_cards() > 0:
+                        actual_player.release_from_prison()
+                        actual_player.use_get_out_of_jail_card()
+                    elif actual_player.turns_in_prison() == 3:
+                        filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                        draw(self, filename)
+                        numero_prova_taulell += 1
+                        actual_player.release_from_prison()
+                        break
+                    else:
+                        filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                        draw(self, filename)
+                        numero_prova_taulell += 1
+                        break
+                        
+
+                total_dice = self._dice1 + self._dice2 
                 print(f'{actual_player.name()} ha tret un {self._dice1} i un {self._dice2}')
                 destination = (actual_player.position() + total_dice) % 40
                 actual_player.move(total_dice,self)
 
                 filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
                 draw(self, filename)
-                print()
 
                 self.get_tile_index(actual_player.position()).land_on(actual_player,1,self)
-                numero_prova_taulell += 1
+
 
                 if destination != actual_player.position():
-                    print(destination, actual_player.position())
+                    numero_prova_taulell += 1 #hem caigut a chance o go to jail, així que tornem a dibuixar
                     filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
                     draw(self, filename)
-                    numero_prova_taulell += 1
 
-                 #Nova tirada de daus -> nou taulell
+                else: #no ens hem tornat a moure, actualitzem el dibuix que només tenia move per a mostrar els canvis en diners, propietats...
+                    filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                    draw(self, filename)
+                
+                numero_prova_taulell += 1 #Nova tirada de daus -> nou taulell
+            
 
             self._current_player_index += 1 #Passem al següent jugador
             if self._current_player_index == self._number_players:
                 self._current_player_index = 0
+        
+            print()
 
 
     def get_tile_index(self, index: int) -> Tile:
