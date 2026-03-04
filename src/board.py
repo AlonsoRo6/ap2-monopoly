@@ -98,14 +98,23 @@ class Board:
 
                 total_dice = self._dice1 + self._dice2
                 print(f'{actual_player.name()} ha tret un {self._dice1} i un {self._dice2}')
-                actual_player.move(total_dice)
-                
+                destination = (actual_player.position() + total_dice) % 40
+                actual_player.move(total_dice,self)
+
                 filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
                 draw(self, filename)
                 print()
-                numero_prova_taulell += 1 #Nova tirada de daus -> nou taulell
 
-            
+                self.get_tile_index(actual_player.position()).land_on(actual_player,1,self)
+                numero_prova_taulell += 1
+
+                if destination != actual_player.position():
+                    print(destination, actual_player.position())
+                    filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                    draw(self, filename)
+                    numero_prova_taulell += 1
+
+                 #Nova tirada de daus -> nou taulell
 
             self._current_player_index += 1 #Passem al següent jugador
             if self._current_player_index == self._number_players:
@@ -115,6 +124,11 @@ class Board:
     def get_tile_index(self, index: int) -> Tile:
         '''Method to get a tile given its index'''
         return self._tiles[index]
+    
+    def get_deck(self, deck_type: str) -> Deck:
+        if deck_type == "chance":
+            return self._chance
+        return self._community
     
 def save_board(board: Board, pickle_path: str) -> None:
     with open(pickle_path, "wb") as f:

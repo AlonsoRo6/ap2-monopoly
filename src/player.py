@@ -108,7 +108,7 @@ class Player:
         self._owned_properties.append(property)
 
         
-    def move(self, steps:int) -> None:
+    def move(self, steps:int, board:Board) -> None:
         '''Experimntal method to move a player across the board'''
         old_position = self._position
         self._position = (old_position + steps) % 40
@@ -117,8 +117,9 @@ class Player:
             self.add_money(const.GO_SALARY)
             print(f"You've gone through the GO tile and earned {const.GO_SALARY}$")
             print(self._money)
+        
         current_tile = self._board.get_tile_index(self._position)
-        current_tile.land_on(self,1)
+        current_tile.land_on(self,1,board)
 
         print(f'La nova posició és {self._position}')
 

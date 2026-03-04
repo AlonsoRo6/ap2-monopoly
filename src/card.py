@@ -1,7 +1,13 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from player import Player
+    from board import Board
+    from tile import Street
+
 from typing import Any
-from player import Player
-from board import Board
-from tile import Street
+
 
 class Card:
 
@@ -27,7 +33,6 @@ class Card:
         raise NotImplementedError
 
 
-
 class Collect_Money(Card):
 
     def __init__(self, id:int, title:str, description:str, action:str, amount:int) -> None:
@@ -50,7 +55,8 @@ class Move_To(Card):
     def execute(self, player:Player, board:Board) -> None:
         player.move_to(self.get_position())
         tile = board.get_tile_index(self.get_position())
-        tile.land_on(player,1)
+        tile.land_on(player,1,board)
+
 
 class Move_To_Station(Card):
     def __init__(self, id: int, title: str, description: str, action: str, rent_multiplier: int) -> None:
@@ -63,7 +69,7 @@ class Move_To_Station(Card):
     def execute(self,player:Player, board:Board) -> None:
         tile = player.find_next_tile_of_type(board,"station")
         player.move_to(tile.position())
-        tile.land_on(player,self.get_rent_multiplier())
+        tile.land_on(player,self.get_rent_multiplier(),board)
 
 class Move_To_Utility(Card):
     def __init__(self, id: int, title: str, description: str, action: str, rent_multiplier: int) -> None:
@@ -76,7 +82,7 @@ class Move_To_Utility(Card):
     def execute(self,player:Player, board:Board) -> None:
         tile = player.find_next_tile_of_type(board,"utility")
         player.move_to(tile.position())
-        tile.land_on(player,self.get_rent_multiplier())
+        tile.land_on(player,self.get_rent_multiplier(),board)
 
 class Get_Out_Of_Jail(Card):
     def __init__(self, id: int, title: str, description: str, action: str, keepCard: bool) -> None:
@@ -96,7 +102,7 @@ class Move_Back(Card):
     def execute(self, player:Player, board:Board) -> None:
         player.move_to(player.position()-self.get_spaces())
         tile = board.get_tile_index(player.position()-self.get_spaces())
-        tile.land_on(player,1)
+        tile.land_on(player,1,board)
 
 class Go_To_Jail(Card):
     def __init__(self, id: int, title: str, description: str, action: str) -> None:
@@ -163,5 +169,41 @@ class Collect_Players(Card):
             player.add_money(+self.get_amount())
 
 def build_card(data: dict[str, Any]) -> Card: 
-    return Card(data["id"], data["title"], data["description"], data["action"])
+    card_action = data["action"]
+    if card_action == "move_to_position":
+        return Move_To(data["id"], data["title"], data["description"], data["action"], data["position"])
+    
+    elif card_action == "move_to_nearest_station":
+        return Move_To_Station(data["id"], data["title"], data["description"], data["action"], data["rentMultiplier"])
+    
+    elif card_action == "move_to_nearest_utility":
+        return Move_To_Utility(data["id"], data["title"], data["description"], data["action"], data["rentMultiplier"])
+    
+    elif card_action == "collect_money":
+        return Collect_Money(data["id"], data["title"], data["description"], data["action"],data["amount"])
+    
+    elif card_action == "get_out_of_jail_card":
+        return Get_Out_Of_Jail(data["id"], data["title"], data["description"], data["action"],data["keepCard"])
+    
+    elif card_action == "move_back_spaces":
+        return Move_Back(data["id"], data["title"], data["description"], data["action"],data["spaces"])
+    
+    elif card_action == "go_to_jail":
+        return Go_To_Jail(data["id"], data["title"], data["description"], data["action"])
+    
+    elif card_action == "pay_per_property":
+        return Pay_Per_Property(data["id"], data["title"], data["description"], data["action"], data["amountPerHouse"], data["amountPerHotel"])
+    
+    elif card_action == "pay_money":
+        return Pay_Money(data["id"], data["title"], data["description"], data["action"],data["amount"])
+    
+    elif card_action == "pay_each_player":
+        return Pay_Players(data["id"], data["title"], data["description"], data["action"],data["amountPerPlayer"])
+    
+    elif card_action == "collect_from_players":
+        return Collect_Players(data["id"], data["title"], data["description"], data["action"],data["amountPerPlayer"])
+    
+    else:
+        return Card(data["id"], data["title"], data["description"], data["action"])
+
 

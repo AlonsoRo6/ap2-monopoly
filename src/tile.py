@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
-from player import Player
 from strategy import *
 
 
@@ -27,7 +26,7 @@ class Tile:
         self._tile_type = tile_type
         self._description = description
 
-    def land_on(self, player: Player, rent_multiplier:int) -> None:
+    def land_on(self, player: Player, rent_multiplier:int, board:Board) -> None:
         """Handle what happens when a player lands on this tile."""
         if self._tile_type == "property":            
             print(f"You've landed on a property")
@@ -39,6 +38,9 @@ class Tile:
             print(f"You've landed on a utility")
         elif self._tile_type == "community_chest" or self._tile_type == "chance":
             print(f"You've landed on a card")
+        elif self._tile_type == "special" and self._description == "Go directly to jail":
+            player.move_to(10)
+            
         else:
             print(f"You've landed else")
 
@@ -118,7 +120,7 @@ class Property(Tile):
         self.is_mortgaged = False
 
 
-    def land_on(self, player: Player, rent_multiplier:int) -> None:
+    def land_on(self, player: Player, rent_multiplier:int, board:Board) -> None:
         '''Handles what happens when a player lands on a property'''
         owner = self.get_owner()
         if owner == None:
@@ -316,6 +318,24 @@ class Tax(Tile):
         super().__init__(board, position, name, tile_type, description)
         self._amount = amount
 
+    def land_on(self,player:Player,rent_multiplier:int,board:Board) -> None:
+        player.add_money(-self._amount)
+
+
+class Card(Tile):
+    def __init__(self, board: Board, position: int, name: str, tile_type: str, description: str):
+        super().__init__(board, position, name, tile_type, description)
+    
+    def get_type(self) -> str:
+        return self._tile_type
+    
+    def land_on(self, player: Player, rent_multiplier: int, board:Board) -> None:
+        card = board.get_deck(self.get_type()).get_card()
+        card.execute(player,board)
+        print(card.action())
+        
+
+
 
 
 def build_tile(board: Board, data: dict[str, Any]) -> Tile:
@@ -330,6 +350,8 @@ def build_tile(board: Board, data: dict[str, Any]) -> Tile:
         return Station(board, data['position'], data['name'], data['type'], data["price"], data["rent"], data["rentWith2Stations"], data["rentWith3Stations"], data["rentWith4Stations"], data["mortgage"])
     elif tile_type == 'utility':
         return Utility(board, data['position'], data['name'], data['type'], data["price"], data["rentMultiplier"], data["rentMultiplierWithBoth"], data["description"], data['mortgage'])
+    elif tile_type == 'chance' or tile_type == 'community_chest':
+        return Card(board, data['position'], data['name'], data['type'], data['description'])
     else:     
         return Tile(board, data['position'], data['name'], data['type'], data['description'])
 
