@@ -37,6 +37,8 @@ class Player:
         self._get_out_of_jail_free_cards = 0
         self._in_prison = False
         self._turns_in_prison = 0
+        self._bankruptcy = False
+
 
         if self._index % 2 == 0:
             self._strategy = "Advanced"
@@ -74,6 +76,9 @@ class Player:
         '''Returns the player's position'''
         return self._position
 
+    def is_bankrupt(self) -> bool:
+        return self._bankruptcy
+
     def get_out_of_jail_free_cards(self) -> int: return self._get_out_of_jail_free_cards
 
     def turns_in_prison(self) -> int: return self._turns_in_prison
@@ -107,17 +112,11 @@ class Player:
     def new_property(self, property: Property) -> None:
         '''Method that adds the given property to the player's list of owned properties'''
         self._owned_properties.append(property)
-
-        
+  
     def move(self, steps:int, board:Board) -> None:
         '''Experimntal method to move a player across the board'''
         old_position = self._position
         self._position = (old_position + steps) % 40
-
-        if self._position < old_position: #falta afegir que no hagi anat a la presó
-            self.add_money(const.GO_SALARY)
-            print(f"You've gone through the GO tile and earned {const.GO_SALARY}$")
-            print(self._money)
 
         print(f'La nova posició és {self._position}')
 
@@ -129,7 +128,18 @@ class Player:
         '''Returns a string with the name of the player's strategy'''
         return self._strategy
 
+
+
+    def post_turn_actions(self) -> None:
+        for property in self.owned_properties():
+            from tile import Street
+            if isinstance(property,Street) and property.can_build_house() and self.money() > property.get_house_cost():
+                self.add_money(-property.get_house_cost())
+                property.buy_house()
+
+
     def find_next_tile_of_type(self, board:Board, tile_type: str) -> Tile:
+        '''Returns the nearest tile of the same type as the given tyle_type'''
         tiles = board.tiles()
         num_tiles = len(tiles)
         for i in range(1, num_tiles + 1):
@@ -162,6 +172,56 @@ class Player:
         self._turns_in_prison += 1
 
 
+    def clear_properties(self) -> None:
+        '''When a player goes bankrupt to the bank, all of its properties go to the bank'''
+        for property in self.owned_properties():
+            from tile import Street
+            if isinstance(property,Street):
+                while property.amount_houses() > 0:
+                    property.sell_house()
+            if property.is_tile_mortgaged():
+                property.unmortgage()
+            property.set_owner(None)
+
+
+    def transfer_properties(self,transfer_player:Player,board:Board) -> None:
+        '''When a player goes bankrupt to another player, all of its properties go to the other player'''
+
+        for _ in range(self.get_out_of_jail_free_cards()): #traspassem les cartes per sortir de la presó
+            transfer_player.add_get_out_of_jail_card()
+
+        for property in self.owned_properties():
+            property.set_owner(transfer_player)
+            transfer_player.new_property(property)
+            
+            if property.is_tile_mortgaged():
+                unmortgage_price = property.get_unmortgage_price()
+                ten_percent_mortgage = int(property.get_mortgage() * 0.1)
+
+                if transfer_player.money() > unmortgage_price: #unmortgage
+                    transfer_player.add_money(-unmortgage_price)
+                    property.unmortgage()
+                elif transfer_player.money() > ten_percent_mortgage: #keep mortgaged
+                    transfer_player.add_money(-ten_percent_mortgage)
+                else:
+                    transfer_player.bankruptcy(None,board) #si no pot pagar res d'això, en bancarrota
+                    return
+        
+
+
+    def bankruptcy(self, transfer_player:Player|None,board:Board) -> None:
+        if transfer_player == None:
+            self.clear_properties()
+        else:
+            transfer_player.add_money(self.money())
+            self.transfer_properties(transfer_player,board)
+
+        self._money = 0
+        self.owned_properties().clear()
+        self._get_out_of_jail_free_cards = 0
+        board.eliminate_player()
+        self._bankruptcy = True
+    
 
 def build_player(board: Board, data: dict[str, Any]) -> Player:
     """Build a Player from JSON-like dict with 'name', 'piece', and 'color' keys."""

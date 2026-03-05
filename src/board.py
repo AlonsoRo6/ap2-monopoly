@@ -44,10 +44,18 @@ class Board:
         self._current_player_index = 0
         self._dice1 = 0
         self._dice2 = 0
+        self._alive_players = 4
 
     def players(self) -> list[Player]: 
         '''Returns a list of Player with all players'''
         return self._players
+
+    def alive_players(self) -> int:
+        return self._alive_players
+
+    def eliminate_player(self) -> None:
+        self._alive_players -= 1
+
 
     def tiles(self) -> list[Tile]: 
         '''Returns a list of Tile with all tiles'''
@@ -70,13 +78,19 @@ class Board:
         return 10
 
     
-    def play(self,total_turns:int) -> None:
+    def play(self) -> None:
         '''Plays'''
         draw(self, "tauler-000.svg")
         numero_prova_taulell = 0
         
-        for _ in range(total_turns):
+        while self.alive_players() > 1:
             actual_player = self.current_player()
+            
+            if actual_player.is_bankrupt():
+                self._current_player_index += 1 #Passem al següent jugador
+                if self._current_player_index == self._number_players:
+                    self._current_player_index = 0
+                continue
             
             self._dice1, self._dice2 = 0,0
             comptador_dobles = 0
@@ -96,7 +110,6 @@ class Board:
                     draw(self, filename)
                     numero_prova_taulell += 1
                     break
-                
                 
                 if actual_player.is_in_prison(): #dues maneres de sortir de la presó, i si no dibuixem i passem torn
                     print("A LA PRESÖ:",actual_player.name())
@@ -121,15 +134,39 @@ class Board:
                         
 
                 total_dice = self._dice1 + self._dice2 
+                old_position = actual_player.position()
                 print(f'{actual_player.name()} ha tret un {self._dice1} i un {self._dice2}')
-                destination = (actual_player.position() + total_dice) % 40
+                destination = (old_position + total_dice) % 40
                 actual_player.move(total_dice,self)
 
                 filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
                 draw(self, filename)
 
-                self.get_tile_index(actual_player.position()).land_on(actual_player,1,self)
+                landed_tile = self.get_tile_index(actual_player.position())
+                landed_tile.land_on(actual_player,1,self)
+                actual_player.post_turn_actions()
 
+                actual_position = self.get_tile_index(actual_player.position())
+                if actual_player.money() < 0: #bankruptcy
+                    
+                    from tile import Property 
+                    if isinstance(actual_position, Property):
+                        actual_player.bankruptcy(actual_position.get_owner(),self)
+                    else:
+                        actual_player.bankruptcy(None,self)
+                    
+                    filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                    draw(self, filename)
+                    numero_prova_taulell += 1
+                    self._dice1, self._dice2 = -1,0 #per si un cas la tirada en què cau en bancarrota havia tret dobles
+                    break
+
+
+                if actual_player.position() < old_position - 3 and not actual_player.is_in_prison() and not actual_player.is_bankrupt(): #casella de sortida
+                    #old position - 3 per tenir en compte les cartes de Chance que fan anar 3 caselles enrere
+                    actual_player.add_money(const.GO_SALARY)
+                    print(f"You've gone through the GO tile and earned {const.GO_SALARY}$")
+                    print(actual_player.money())
 
                 if destination != actual_player.position():
                     numero_prova_taulell += 1 #hem caigut a chance o go to jail, així que tornem a dibuixar
@@ -158,7 +195,8 @@ class Board:
         if deck_type == "chance":
             return self._chance
         return self._community
-    
+
+
 def save_board(board: Board, pickle_path: str) -> None:
     with open(pickle_path, "wb") as f:
         pickle.dump(board, f)

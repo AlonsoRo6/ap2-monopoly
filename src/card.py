@@ -152,8 +152,9 @@ class Pay_Players(Card):
     
     def execute(self,player:Player,board:Board) -> None:
         for oponent in board.players():
-            oponent.add_money(self.get_amount())
-            player.add_money(-self.get_amount())
+            if not oponent.is_bankrupt():
+                oponent.add_money(self.get_amount())
+                player.add_money(-self.get_amount())
 
 class Collect_Players(Card):
     def __init__(self, id: int, title: str, description: str, action: str, amount:int) -> None:
@@ -165,8 +166,9 @@ class Collect_Players(Card):
     
     def execute(self,player:Player,board:Board) -> None:
         for oponent in board.players():
-            oponent.add_money(-self.get_amount())
-            player.add_money(+self.get_amount())
+            if not oponent.is_bankrupt():
+                oponent.add_money(-self.get_amount())
+                player.add_money(+self.get_amount())
 
 def build_card(data: dict[str, Any]) -> Card: 
     card_action = data["action"]

@@ -86,6 +86,9 @@ class Property(Tile):
         '''Returns the property owner'''
         return self.owner
     
+    def set_owner(self, player:Player|None) -> None:
+        self.owner = player
+
     def is_tile_mortgaged(self) -> bool:
         '''Returns true if the property's mortgaged'''
         return self.is_mortgaged
@@ -105,7 +108,7 @@ class Property(Tile):
         '''Returns true if the property can be mortgaged'''
         owner = self.get_owner()
         assert owner is not None
-        if isinstance(self,Street) and self.amount_houses() > 0:
+        if any([street.amount_houses() > 0 for street in owner.owned_properties() if isinstance(street,Street) and street.color == self.color]):
             return False
         return True
 
@@ -127,18 +130,12 @@ class Property(Tile):
             if should_buy_property(player,self):
                 player.add_money(-self.get_price())
                 player.new_property(self)
-                self.owner = player
-        elif owner == player:
-            pass
-        else:
+                self.set_owner(player)
+        elif owner != player:
             if not self.is_tile_mortgaged():
                 rent = self.get_rent()
                 owner.add_money(rent*rent_multiplier)
                 player.add_money(-rent*rent_multiplier)
-        
-        for prop in player.owned_properties():
-            if should_build_house(player,prop):
-                ... #implementar compra de cases
 
 
 class Street(Property):
@@ -172,7 +169,8 @@ class Street(Property):
         self._house_cost = house_cost
         self._hotelcost = hotel_cost
         
-        self._houses = 0    
+        self.houses = 0  
+        self.hotels = 0 
 
     def get_rent(self) -> int: 
         '''Returns the street rent, taking into account all variables'''
@@ -193,18 +191,28 @@ class Street(Property):
                 return self._rent_with_hotel
         else:
             return self._rent
-        
+    
+    def get_house_cost(self) -> int:
+        if self.amount_houses() == 4:
+            return self._hotelcost
+        else:
+            return self._house_cost
+
     def buy_house(self) -> None:
         '''Adds a house to the street'''
-        self._houses += 1
+        self.houses += 1
+        if self.houses == 5:
+            self.hotels = 1
 
     def sell_house(self) -> None:
-        self._houses -= 1
+        self.houses -= 1
+        if self.hotels == 1:
+            self.hotels -= 1
 
 
     def amount_houses(self) -> int:
         '''Returns the amount of houses (5 if hotel) the street has'''
-        return self._houses
+        return self.houses
     
     def can_build_house(self) -> bool:
         '''Returns true if the player can build a house or hotel on this street'''
