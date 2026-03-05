@@ -15,7 +15,6 @@ from player import build_player
 from draw import draw
 import const
 
-
 class Board:
 
     def __init__(
@@ -51,9 +50,11 @@ class Board:
         return self._players
 
     def alive_players(self) -> int:
+        '''Returns the amount of still alive players'''
         return self._alive_players
 
     def eliminate_player(self) -> None:
+        '''Eliminates a player from the player count'''
         self._alive_players -= 1
 
 
@@ -80,7 +81,7 @@ class Board:
     
     def play(self) -> None:
         '''Plays'''
-        draw(self, "tauler-000.svg")
+        draw(self, "output/tauler-000.svg")
         numero_prova_taulell = 0
         
         while self.alive_players() > 1:
@@ -106,7 +107,7 @@ class Board:
                     actual_player.move_to(self.jail_position())
                     actual_player.put_in_prison()
                     
-                    filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                    filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
                     draw(self, filename)
                     numero_prova_taulell += 1
                     break
@@ -121,13 +122,13 @@ class Board:
                         actual_player.release_from_prison()
                         actual_player.use_get_out_of_jail_card()
                     elif actual_player.turns_in_prison() == 3:
-                        filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                        filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
                         draw(self, filename)
                         numero_prova_taulell += 1
                         actual_player.release_from_prison()
                         break
                     else:
-                        filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                        filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
                         draw(self, filename)
                         numero_prova_taulell += 1
                         break
@@ -139,7 +140,7 @@ class Board:
                 destination = (old_position + total_dice) % 40
                 actual_player.move(total_dice,self)
 
-                filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
                 draw(self, filename)
 
                 landed_tile = self.get_tile_index(actual_player.position())
@@ -155,7 +156,7 @@ class Board:
                     else:
                         actual_player.bankruptcy(None,self)
                     
-                    filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                    filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
                     draw(self, filename)
                     numero_prova_taulell += 1
                     self._dice1, self._dice2 = -1,0 #per si un cas la tirada en què cau en bancarrota havia tret dobles
@@ -170,11 +171,11 @@ class Board:
 
                 if destination != actual_player.position():
                     numero_prova_taulell += 1 #hem caigut a chance o go to jail, així que tornem a dibuixar
-                    filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                    filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
                     draw(self, filename)
 
                 else: #no ens hem tornat a moure, actualitzem el dibuix que només tenia move per a mostrar els canvis en diners, propietats...
-                    filename = f"tauler-{numero_prova_taulell + 1:03d}.svg"
+                    filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
                     draw(self, filename)
                 
                 numero_prova_taulell += 1 #Nova tirada de daus -> nou taulell
@@ -192,6 +193,7 @@ class Board:
         return self._tiles[index]
     
     def get_deck(self, deck_type: str) -> Deck:
+        '''Method to get a deck given the deck_type (chance or community)'''
         if deck_type == "chance":
             return self._chance
         return self._community

@@ -77,11 +77,16 @@ class Player:
         return self._position
 
     def is_bankrupt(self) -> bool:
+        '''Returns true if the player is bankrupt'''
         return self._bankruptcy
 
-    def get_out_of_jail_free_cards(self) -> int: return self._get_out_of_jail_free_cards
+    def get_out_of_jail_free_cards(self) -> int: 
+        '''Returns the amount of get out of jail card the player has'''
+        return self._get_out_of_jail_free_cards
 
-    def turns_in_prison(self) -> int: return self._turns_in_prison
+    def turns_in_prison(self) -> int: 
+        '''Returns the amount of turns the player has spent in prison'''
+        return self._turns_in_prison
 
     def owned_properties(self) -> list[Property]: 
         '''Returns a list of Property with all properties owned by the player'''
@@ -129,13 +134,26 @@ class Player:
         return self._strategy
 
 
-
     def post_turn_actions(self) -> None:
+        '''Method that executes the post-turn actions if necessary'''
         for property in self.owned_properties():
             from tile import Street
-            if isinstance(property,Street) and property.can_build_house() and self.money() > property.get_house_cost():
+            if isinstance(property,Street) and should_build_house(self,property): #build house
                 self.add_money(-property.get_house_cost())
                 property.buy_house()
+                
+            if isinstance(property,Street): #sell house
+                while should_sell_house(self,property):
+                    self.add_money(property.get_house_cost())
+                    property.sell_house()
+            
+            if should_mortgage_property(self, property): #mortgage
+                self.add_money(property.get_mortgage())
+                property.mortgage()
+            
+            if property.is_tile_mortgaged() and should_unmortgage_property(self,property): #unmortgage
+                self.add_money(-property.get_unmortgage_price())
+                property.unmortgage()
 
 
     def find_next_tile_of_type(self, board:Board, tile_type: str) -> Tile:
@@ -153,22 +171,28 @@ class Player:
 
     #funcions gestió pressó
     def add_get_out_of_jail_card(self) -> None:
+        '''Method that adds one get out of jail card to this player'''
         self._get_out_of_jail_free_cards += 1
 
     def use_get_out_of_jail_card(self) -> None:
+        '''Method that uses one of the get oout of jail cards of this player'''
         self._get_out_of_jail_free_cards -= 1
 
     def put_in_prison(self) -> None:
+        '''Method that "internally" puts in prison this player'''
         self._in_prison = True
 
     def release_from_prison(self) -> None:
+        '''Method that "internally" releases from prison this player'''
         self._in_prison = False
         self._turns_in_prison = 0
 
     def is_in_prison(self) -> bool:
+        '''Method that return true if the player is in prison'''
         return self._in_prison
 
     def add_turn_in_prison(self) -> None:
+        '''Method that adds one to the amount of turns the player has spent in prison'''
         self._turns_in_prison += 1
 
 
@@ -182,7 +206,6 @@ class Player:
             if property.is_tile_mortgaged():
                 property.unmortgage()
             property.set_owner(None)
-
 
     def transfer_properties(self,transfer_player:Player,board:Board) -> None:
         '''When a player goes bankrupt to another player, all of its properties go to the other player'''
@@ -207,9 +230,9 @@ class Player:
                     transfer_player.bankruptcy(None,board) #si no pot pagar res d'això, en bancarrota
                     return
         
-
-
+        
     def bankruptcy(self, transfer_player:Player|None,board:Board) -> None:
+        '''Method that handles what happens when a player goes bankrupt, either to another player or to the bank'''
         if transfer_player == None:
             self.clear_properties()
         else:

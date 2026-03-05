@@ -87,6 +87,7 @@ class Property(Tile):
         return self.owner
     
     def set_owner(self, player:Player|None) -> None:
+        '''Method that sets the given player as the owner of this Property'''
         self.owner = player
 
     def is_tile_mortgaged(self) -> bool:
@@ -106,6 +107,8 @@ class Property(Tile):
     
     def can_mortgage(self) -> bool:
         '''Returns true if the property can be mortgaged'''
+        if self.is_tile_mortgaged():
+            return False
         owner = self.get_owner()
         assert owner is not None
         if any([street.amount_houses() > 0 for street in owner.owned_properties() if isinstance(street,Street) and street.color == self.color]):
@@ -113,13 +116,15 @@ class Property(Tile):
         return True
 
     def get_unmortgage_price(self) -> int:
-        '''Return the price that has to be paid for the property to be unmortgaged'''
+        '''Returns the price that has to be paid for the property to be unmortgaged'''
         return int(self.get_mortgage() + self.get_mortgage() * 0.1)
 
     def mortgage(self) -> None:
+        '''Method that "internally" sets the property to mortgaged'''
         self.is_mortgaged = True
     
     def unmortgage(self) -> None:
+        '''Method that "internally" sets the property to unmortgaged'''
         self.is_mortgaged = False
 
 
@@ -193,6 +198,7 @@ class Street(Property):
             return self._rent
     
     def get_house_cost(self) -> int:
+        '''Method that returns the price of the next house or hotel for this Street'''
         if self.amount_houses() == 4:
             return self._hotelcost
         else:
@@ -205,10 +211,10 @@ class Street(Property):
             self.hotels = 1
 
     def sell_house(self) -> None:
+        '''Sells a house of this street'''
         self.houses -= 1
         if self.hotels == 1:
             self.hotels -= 1
-
 
     def amount_houses(self) -> int:
         '''Returns the amount of houses (5 if hotel) the street has'''
@@ -247,7 +253,6 @@ class Street(Property):
             return False
 
         color_set = [street for street in owner.owned_properties()if isinstance(street,Street) and street.color == self.color and street != self]
-
         houses_same_color = [street.amount_houses() for street in color_set]
 
         if houses >= max(houses_same_color):
@@ -278,7 +283,7 @@ class Station(Property):
 
         
     def get_rent(self) -> int: 
-        '''Returns the station rent, takin into account all variables'''
+        '''Returns the station rent, taking into account all variables'''
         owner = self.get_owner()
         assert owner != None
         if owner.amount_stations() == 1:
@@ -341,9 +346,6 @@ class Card(Tile):
         card = board.get_deck(self.get_type()).get_card()
         card.execute(player,board)
         print(card.action())
-        
-
-
 
 
 def build_tile(board: Board, data: dict[str, Any]) -> Tile:

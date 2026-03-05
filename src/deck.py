@@ -19,12 +19,15 @@ class Deck:
         self.shuffle()
 
     def shuffle(self) -> None:
+        '''Shuffles the given deck'''
         random.shuffle(self._cards)
 
     def get_deck(self) -> list[Card]:
+        '''Returns the given deck as a list of Card'''
         return self._cards
     
     def get_card(self) -> Card:
+        '''Returns the last card of the given deck and handles what happens when a deck is empty'''
         if not self.get_deck():
             self._cards = self._discarded_cards
             self._discarded_cards = []
