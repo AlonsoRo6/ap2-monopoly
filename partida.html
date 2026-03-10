@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monopoly Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        #svg-display {
+            max-width: 90vw;
+            max-height: 85vh;
+        }
+        .controls {
+            margin-top: 0px;
+        }
+        button {
+            font-size: 32px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #4CAF50;
+            color: white;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .info {
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img id="svg-display" src="output/tauler-000.svg" alt="SVG Image">
+        <div class="controls">
+            <button id="btn-first" onclick="goToFirst()">⏮️</button>
+            <button id="btn-prev" onclick="goToPrev()">⬅️</button>
+            <button id="btn-next" onclick="goToNext()">➡️</button>
+            <button id="btn-last" onclick="goToLast()">⏭️</button>
+        </div>
+        <div class="info">
+            <span id="current-info">1 / 407</span>
+        </div>
+    </div>
+    
+    <script>
+        const svgPaths = ['output/tauler-000.svg', 'output/tauler-001.svg', 'output/tauler-002.svg', 'output/tauler-003.svg', 'output/tauler-004.svg', 'output/tauler-005.svg', 'output/tauler-006.svg', 'output/tauler-007.svg', 'output/tauler-008.svg', 'output/tauler-009.svg', 'output/tauler-010.svg', 'output/tauler-011.svg', 'output/tauler-012.svg', 'output/tauler-013.svg', 'output/tauler-014.svg', 'output/tauler-015.svg', 'output/tauler-016.svg', 'output/tauler-017.svg', 'output/tauler-018.svg', 'output/tauler-019.svg', 'output/tauler-020.svg', 'output/tauler-021.svg', 'output/tauler-022.svg', 'output/tauler-023.svg', 'output/tauler-024.svg', 'output/tauler-025.svg', 'output/tauler-026.svg', 'output/tauler-027.svg', 'output/tauler-028.svg', 'output/tauler-029.svg', 'output/tauler-030.svg', 'output/tauler-031.svg', 'output/tauler-032.svg', 'output/tauler-033.svg', 'output/tauler-034.svg', 'output/tauler-035.svg', 'output/tauler-036.svg', 'output/tauler-037.svg', 'output/tauler-038.svg', 'output/tauler-039.svg', 'output/tauler-040.svg', 'output/tauler-041.svg', 'output/tauler-042.svg', 'output/tauler-043.svg', 'output/tauler-044.svg', 'output/tauler-045.svg', 'output/tauler-046.svg', 'output/tauler-047.svg', 'output/tauler-048.svg', 'output/tauler-049.svg', 'output/tauler-050.svg', 'output/tauler-051.svg', 'output/tauler-052.svg', 'output/tauler-053.svg', 'output/tauler-054.svg', 'output/tauler-055.svg', 'output/tauler-056.svg', 'output/tauler-057.svg', 'output/tauler-058.svg', 'output/tauler-059.svg', 'output/tauler-060.svg', 'output/tauler-061.svg', 'output/tauler-062.svg', 'output/tauler-063.svg', 'output/tauler-064.svg', 'output/tauler-065.svg', 'output/tauler-066.svg', 'output/tauler-067.svg', 'output/tauler-068.svg', 'output/tauler-069.svg', 'output/tauler-070.svg', 'output/tauler-071.svg', 'output/tauler-072.svg', 'output/tauler-073.svg', 'output/tauler-074.svg', 'output/tauler-075.svg', 'output/tauler-076.svg', 'output/tauler-077.svg', 'output/tauler-078.svg', 'output/tauler-079.svg', 'output/tauler-080.svg', 'output/tauler-081.svg', 'output/tauler-082.svg', 'output/tauler-083.svg', 'output/tauler-084.svg', 'output/tauler-085.svg', 'output/tauler-086.svg', 'output/tauler-087.svg', 'output/tauler-088.svg', 'output/tauler-089.svg', 'output/tauler-090.svg', 'output/tauler-091.svg', 'output/tauler-092.svg', 'output/tauler-093.svg', 'output/tauler-094.svg', 'output/tauler-095.svg', 'output/tauler-096.svg', 'output/tauler-097.svg', 'output/tauler-098.svg', 'output/tauler-099.svg', 'output/tauler-100.svg', 'output/tauler-101.svg', 'output/tauler-102.svg', 'output/tauler-103.svg', 'output/tauler-104.svg', 'output/tauler-105.svg', 'output/tauler-106.svg', 'output/tauler-107.svg', 'output/tauler-108.svg', 'output/tauler-109.svg', 'output/tauler-110.svg', 'output/tauler-111.svg', 'output/tauler-112.svg', 'output/tauler-113.svg', 'output/tauler-114.svg', 'output/tauler-115.svg', 'output/tauler-116.svg', 'output/tauler-117.svg', 'output/tauler-118.svg', 'output/tauler-119.svg', 'output/tauler-120.svg', 'output/tauler-121.svg', 'output/tauler-122.svg', 'output/tauler-123.svg', 'output/tauler-124.svg', 'output/tauler-125.svg', 'output/tauler-126.svg', 'output/tauler-127.svg', 'output/tauler-128.svg', 'output/tauler-129.svg', 'output/tauler-130.svg', 'output/tauler-131.svg', 'output/tauler-132.svg', 'output/tauler-133.svg', 'output/tauler-134.svg', 'output/tauler-135.svg', 'output/tauler-136.svg', 'output/tauler-137.svg', 'output/tauler-138.svg', 'output/tauler-139.svg', 'output/tauler-140.svg', 'output/tauler-141.svg', 'output/tauler-142.svg', 'output/tauler-143.svg', 'output/tauler-144.svg', 'output/tauler-145.svg', 'output/tauler-146.svg', 'output/tauler-147.svg', 'output/tauler-148.svg', 'output/tauler-149.svg', 'output/tauler-150.svg', 'output/tauler-151.svg', 'output/tauler-152.svg', 'output/tauler-153.svg', 'output/tauler-154.svg', 'output/tauler-155.svg', 'output/tauler-156.svg', 'output/tauler-157.svg', 'output/tauler-158.svg', 'output/tauler-159.svg', 'output/tauler-160.svg', 'output/tauler-161.svg', 'output/tauler-162.svg', 'output/tauler-163.svg', 'output/tauler-164.svg', 'output/tauler-165.svg', 'output/tauler-166.svg', 'output/tauler-167.svg', 'output/tauler-168.svg', 'output/tauler-169.svg', 'output/tauler-170.svg', 'output/tauler-171.svg', 'output/tauler-172.svg', 'output/tauler-173.svg', 'output/tauler-174.svg', 'output/tauler-175.svg', 'output/tauler-176.svg', 'output/tauler-177.svg', 'output/tauler-178.svg', 'output/tauler-179.svg', 'output/tauler-180.svg', 'output/tauler-181.svg', 'output/tauler-182.svg', 'output/tauler-183.svg', 'output/tauler-184.svg', 'output/tauler-185.svg', 'output/tauler-186.svg', 'output/tauler-187.svg', 'output/tauler-188.svg', 'output/tauler-189.svg', 'output/tauler-190.svg', 'output/tauler-191.svg', 'output/tauler-192.svg', 'output/tauler-193.svg', 'output/tauler-194.svg', 'output/tauler-195.svg', 'output/tauler-196.svg', 'output/tauler-197.svg', 'output/tauler-198.svg', 'output/tauler-199.svg', 'output/tauler-200.svg', 'output/tauler-201.svg', 'output/tauler-202.svg', 'output/tauler-203.svg', 'output/tauler-204.svg', 'output/tauler-205.svg', 'output/tauler-206.svg', 'output/tauler-207.svg', 'output/tauler-208.svg', 'output/tauler-209.svg', 'output/tauler-210.svg', 'output/tauler-211.svg', 'output/tauler-212.svg', 'output/tauler-213.svg', 'output/tauler-214.svg', 'output/tauler-215.svg', 'output/tauler-216.svg', 'output/tauler-217.svg', 'output/tauler-218.svg', 'output/tauler-219.svg', 'output/tauler-220.svg', 'output/tauler-221.svg', 'output/tauler-222.svg', 'output/tauler-223.svg', 'output/tauler-224.svg', 'output/tauler-225.svg', 'output/tauler-226.svg', 'output/tauler-227.svg', 'output/tauler-228.svg', 'output/tauler-229.svg', 'output/tauler-230.svg', 'output/tauler-231.svg', 'output/tauler-232.svg', 'output/tauler-233.svg', 'output/tauler-234.svg', 'output/tauler-235.svg', 'output/tauler-236.svg', 'output/tauler-237.svg', 'output/tauler-238.svg', 'output/tauler-239.svg', 'output/tauler-240.svg', 'output/tauler-241.svg', 'output/tauler-242.svg', 'output/tauler-243.svg', 'output/tauler-244.svg', 'output/tauler-245.svg', 'output/tauler-246.svg', 'output/tauler-247.svg', 'output/tauler-248.svg', 'output/tauler-249.svg', 'output/tauler-250.svg', 'output/tauler-251.svg', 'output/tauler-252.svg', 'output/tauler-253.svg', 'output/tauler-254.svg', 'output/tauler-255.svg', 'output/tauler-256.svg', 'output/tauler-257.svg', 'output/tauler-258.svg', 'output/tauler-259.svg', 'output/tauler-260.svg', 'output/tauler-261.svg', 'output/tauler-262.svg', 'output/tauler-263.svg', 'output/tauler-264.svg', 'output/tauler-265.svg', 'output/tauler-266.svg', 'output/tauler-267.svg', 'output/tauler-268.svg', 'output/tauler-269.svg', 'output/tauler-270.svg', 'output/tauler-271.svg', 'output/tauler-272.svg', 'output/tauler-273.svg', 'output/tauler-274.svg', 'output/tauler-275.svg', 'output/tauler-276.svg', 'output/tauler-277.svg', 'output/tauler-278.svg', 'output/tauler-279.svg', 'output/tauler-280.svg', 'output/tauler-281.svg', 'output/tauler-282.svg', 'output/tauler-283.svg', 'output/tauler-284.svg', 'output/tauler-285.svg', 'output/tauler-286.svg', 'output/tauler-287.svg', 'output/tauler-288.svg', 'output/tauler-289.svg', 'output/tauler-290.svg', 'output/tauler-291.svg', 'output/tauler-292.svg', 'output/tauler-293.svg', 'output/tauler-294.svg', 'output/tauler-295.svg', 'output/tauler-296.svg', 'output/tauler-297.svg', 'output/tauler-298.svg', 'output/tauler-299.svg', 'output/tauler-300.svg', 'output/tauler-301.svg', 'output/tauler-302.svg', 'output/tauler-303.svg', 'output/tauler-304.svg', 'output/tauler-305.svg', 'output/tauler-306.svg', 'output/tauler-307.svg', 'output/tauler-308.svg', 'output/tauler-309.svg', 'output/tauler-310.svg', 'output/tauler-311.svg', 'output/tauler-312.svg', 'output/tauler-313.svg', 'output/tauler-314.svg', 'output/tauler-315.svg', 'output/tauler-316.svg', 'output/tauler-317.svg', 'output/tauler-318.svg', 'output/tauler-319.svg', 'output/tauler-320.svg', 'output/tauler-321.svg', 'output/tauler-322.svg', 'output/tauler-323.svg', 'output/tauler-324.svg', 'output/tauler-325.svg', 'output/tauler-326.svg', 'output/tauler-327.svg', 'output/tauler-328.svg', 'output/tauler-329.svg', 'output/tauler-330.svg', 'output/tauler-331.svg', 'output/tauler-332.svg', 'output/tauler-333.svg', 'output/tauler-334.svg', 'output/tauler-335.svg', 'output/tauler-336.svg', 'output/tauler-337.svg', 'output/tauler-338.svg', 'output/tauler-339.svg', 'output/tauler-340.svg', 'output/tauler-341.svg', 'output/tauler-342.svg', 'output/tauler-343.svg', 'output/tauler-344.svg', 'output/tauler-345.svg', 'output/tauler-346.svg', 'output/tauler-347.svg', 'output/tauler-348.svg', 'output/tauler-349.svg', 'output/tauler-350.svg', 'output/tauler-351.svg', 'output/tauler-352.svg', 'output/tauler-353.svg', 'output/tauler-354.svg', 'output/tauler-355.svg', 'output/tauler-356.svg', 'output/tauler-357.svg', 'output/tauler-358.svg', 'output/tauler-359.svg', 'output/tauler-360.svg', 'output/tauler-361.svg', 'output/tauler-362.svg', 'output/tauler-363.svg', 'output/tauler-364.svg', 'output/tauler-365.svg', 'output/tauler-366.svg', 'output/tauler-367.svg', 'output/tauler-368.svg', 'output/tauler-369.svg', 'output/tauler-370.svg', 'output/tauler-371.svg', 'output/tauler-372.svg', 'output/tauler-373.svg', 'output/tauler-374.svg', 'output/tauler-375.svg', 'output/tauler-376.svg', 'output/tauler-377.svg', 'output/tauler-378.svg', 'output/tauler-379.svg', 'output/tauler-380.svg', 'output/tauler-381.svg', 'output/tauler-382.svg', 'output/tauler-383.svg', 'output/tauler-384.svg', 'output/tauler-385.svg', 'output/tauler-386.svg', 'output/tauler-387.svg', 'output/tauler-388.svg', 'output/tauler-389.svg', 'output/tauler-390.svg', 'output/tauler-391.svg', 'output/tauler-392.svg', 'output/tauler-393.svg', 'output/tauler-394.svg', 'output/tauler-395.svg', 'output/tauler-396.svg', 'output/tauler-397.svg', 'output/tauler-398.svg', 'output/tauler-399.svg', 'output/tauler-400.svg', 'output/tauler-401.svg', 'output/tauler-402.svg', 'output/tauler-403.svg', 'output/tauler-404.svg', 'output/tauler-405.svg', 'output/tauler-406.svg'];
+        let currentIndex = 0;
+        
+        function updateDisplay() {
+            const img = document.getElementById('svg-display');
+            img.src = svgPaths[currentIndex];
+            
+            document.getElementById('current-info').textContent = 
+                (currentIndex + 1) + ' / ' + svgPaths.length;
+            
+            // Update button states
+            document.getElementById('btn-first').disabled = currentIndex === 0;
+            document.getElementById('btn-prev').disabled = currentIndex === 0;
+            document.getElementById('btn-next').disabled = currentIndex === svgPaths.length - 1;
+            document.getElementById('btn-last').disabled = currentIndex === svgPaths.length - 1;
+        }
+        
+        function goToFirst() {
+            currentIndex = 0;
+            updateDisplay();
+        }
+        
+        function goToPrev() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateDisplay();
+            }
+        }
+        
+        function goToNext() {
+            if (currentIndex < svgPaths.length - 1) {
+                currentIndex++;
+                updateDisplay();
+            }
+        }
+        
+        function goToLast() {
+            currentIndex = svgPaths.length - 1;
+            updateDisplay();
+        }
+        
+        // Initialize on page load
+        updateDisplay();
+    </script>
+</body>
+</html>

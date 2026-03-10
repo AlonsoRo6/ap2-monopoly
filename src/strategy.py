@@ -16,7 +16,7 @@ def should_buy_property(player:Player, prop:Property) -> bool:
 
 def should_build_house(player:Player, prop:Street) -> bool:
     '''Returns true if the player CAN and SHOULD build a house on the given property'''
-    return player.strategy() == "Advanced" and prop.can_build_house()
+    return player.strategy() == "Advanced" and prop.can_build_house() and (player.money()-prop.get_house_cost()) > 150
     
     '''if player.strategy() == "Advanced":
         return prop.can_build_house() and player.money() > 400

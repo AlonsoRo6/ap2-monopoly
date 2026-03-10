@@ -114,7 +114,7 @@ class Move_Back(Card):
     def execute(self, player:Player, board:Board) -> None:
         '''Moves the player the amount of positions given back'''
         player.move_to(player.position()-self.get_spaces())
-        tile = board.get_tile_index(player.position()-self.get_spaces())
+        tile = board.get_tile_index(player.position())
         tile.land_on(player,1,board)
 
 class Go_To_Jail(Card):

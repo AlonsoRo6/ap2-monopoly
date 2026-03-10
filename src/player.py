@@ -142,7 +142,7 @@ class Player:
                 self.add_money(-property.get_house_cost())
                 property.buy_house()
                 
-            if isinstance(property,Street): #sell house
+            if isinstance(property,Street) and property.amount_houses() > 0: #sell house
                 while should_sell_house(self,property):
                     self.add_money(property.get_house_cost())
                     property.sell_house()
@@ -244,7 +244,8 @@ class Player:
         self._get_out_of_jail_free_cards = 0
         board.eliminate_player()
         self._bankruptcy = True
-    
+
+        print(f'Player{self} has gone bankrupt to {transfer_player}')
 
 def build_player(board: Board, data: dict[str, Any]) -> Player:
     """Build a Player from JSON-like dict with 'name', 'piece', and 'color' keys."""

@@ -226,8 +226,9 @@ class Street(Property):
         assert owner is not None
         houses = self.amount_houses()
         
-        if houses > 5: 
+        if houses > 5 or not owner.has_color_set(self.color) or owner.money() < self.get_house_cost(): 
             return False
+        
         if not owner.has_color_set(self.color):
             return False 
         

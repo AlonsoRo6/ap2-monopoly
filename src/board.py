@@ -43,7 +43,7 @@ class Board:
         self._current_player_index = 0
         self._dice1 = 0
         self._dice2 = 0
-        self._alive_players = 4
+        self._alive_players = self._number_players
 
     def players(self) -> list[Player]: 
         '''Returns a list of Player with all players'''
@@ -136,7 +136,6 @@ class Board:
 
                 total_dice = self._dice1 + self._dice2 
                 old_position = actual_player.position()
-                print(f'{actual_player.name()} ha tret un {self._dice1} i un {self._dice2}')
                 destination = (old_position + total_dice) % 40
                 actual_player.move(total_dice,self)
 
@@ -145,7 +144,6 @@ class Board:
 
                 landed_tile = self.get_tile_index(actual_player.position())
                 landed_tile.land_on(actual_player,1,self)
-                actual_player.post_turn_actions()
 
                 actual_position = self.get_tile_index(actual_player.position())
                 if actual_player.money() < 0: #bankruptcy
@@ -162,12 +160,12 @@ class Board:
                     self._dice1, self._dice2 = -1,0 #per si un cas la tirada en què cau en bancarrota havia tret dobles
                     break
 
+                actual_player.post_turn_actions()
 
-                if actual_player.position() < old_position - 3 and not actual_player.is_in_prison() and not actual_player.is_bankrupt(): #casella de sortida
+
+                if (actual_player.position() == 0 or actual_player.position() < old_position - 3) and not actual_player.is_in_prison() and not actual_player.is_bankrupt(): #casella de sortida
                     #old position - 3 per tenir en compte les cartes de Chance que fan anar 3 caselles enrere
                     actual_player.add_money(const.GO_SALARY)
-                    print(f"You've gone through the GO tile and earned {const.GO_SALARY}$")
-                    print(actual_player.money())
 
                 if destination != actual_player.position():
                     numero_prova_taulell += 1 #hem caigut a chance o go to jail, així que tornem a dibuixar
