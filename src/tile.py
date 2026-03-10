@@ -28,21 +28,10 @@ class Tile:
 
     def land_on(self, player: Player, rent_multiplier:int, board:Board) -> None:
         """Handle what happens when a player lands on this tile."""
-        if self._tile_type == "property":            
-            print(f"You've landed on a property")
-        elif self._tile_type == "station":
-            print(f"You've landed on a station")
-        elif self._tile_type == "tax":
-            print(f"You've landed on tax")
-        elif self._tile_type == "utility":
-            print(f"You've landed on a utility")
-        elif self._tile_type == "community_chest" or self._tile_type == "chance":
-            print(f"You've landed on a card")
-        elif self._tile_type == "special" and self._description == "Go directly to jail":
+
+        if self._description == "Go directly to jail":
             player.move_to(10)
             player.put_in_prison()
-        else:
-            print(f"You've landed else")
 
     def type(self) -> str:
         '''Returns the tile's type'''

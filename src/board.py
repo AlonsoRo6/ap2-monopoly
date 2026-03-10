@@ -145,7 +145,7 @@ class Board:
                 landed_tile = self.get_tile_index(actual_player.position())
                 landed_tile.land_on(actual_player,1,self)
 
-                actual_position = self.get_tile_index(actual_player.position())
+                actual_position = self.get_tile_index(actual_player.position())                
                 if actual_player.money() < 0: #bankruptcy
                     
                     from tile import Property 
