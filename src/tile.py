@@ -192,6 +192,12 @@ class Street(Property):
             return self._hotelcost
         else:
             return self._house_cost
+        
+    def get_house_sell_price(self) -> int:
+        if self.amount_houses() == 5:
+            return self._hotelcost // 2
+        else:
+            return self._house_cost // 2
 
     def buy_house(self) -> None:
         '''Adds a house to the street'''
@@ -210,7 +216,7 @@ class Street(Property):
         return self.houses
     
     def can_build_house(self) -> bool:
-        '''Returns true if the player can build a house or hotel on this street'''
+        '''Returns true if the player CAN build a house or hotel on this street'''
         owner = self.get_owner()
         assert owner is not None
         houses = self.amount_houses()
@@ -335,7 +341,6 @@ class Card(Tile):
     def land_on(self, player: Player, rent_multiplier: int, board:Board) -> None:
         card = board.get_deck(self.get_type()).get_card()
         card.execute(player,board)
-        print(card.action())
 
 
 def build_tile(board: Board, data: dict[str, Any]) -> Tile:

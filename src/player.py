@@ -123,8 +123,6 @@ class Player:
         old_position = self._position
         self._position = (old_position + steps) % 40
 
-        print(f'La nova posició és {self._position}')
-
     def move_to(self,go_position:int) -> None:
         '''Method that moves a player to a given position'''
         self._position = go_position
@@ -132,7 +130,6 @@ class Player:
     def strategy(self) -> str:
         '''Returns a string with the name of the player's strategy'''
         return self._strategy
-
 
     def post_turn_actions(self) -> None:
         '''Method that executes the post-turn actions if necessary'''
@@ -144,7 +141,7 @@ class Player:
                 
             if isinstance(property,Street) and property.amount_houses() > 0: #sell house
                 while should_sell_house(self,property):
-                    self.add_money(property.get_house_cost())
+                    self.add_money(property.get_house_sell_price())
                     property.sell_house()
             
             if should_mortgage_property(self, property): #mortgage
@@ -244,8 +241,6 @@ class Player:
         self._get_out_of_jail_free_cards = 0
         board.eliminate_player()
         self._bankruptcy = True
-
-        print(f'Player{self} has gone bankrupt to {transfer_player}')
 
 def build_player(board: Board, data: dict[str, Any]) -> Player:
     """Build a Player from JSON-like dict with 'name', 'piece', and 'color' keys."""

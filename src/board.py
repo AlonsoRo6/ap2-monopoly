@@ -103,7 +103,6 @@ class Board:
                     comptador_dobles += 1
 
                 if comptador_dobles == 3:
-                    print('gone to prison')
                     actual_player.move_to(self.jail_position())
                     actual_player.put_in_prison()
                     
@@ -113,7 +112,6 @@ class Board:
                     break
                 
                 if actual_player.is_in_prison(): #dues maneres de sortir de la presó, i si no dibuixem i passem torn
-                    print("A LA PRESÖ:",actual_player.name())
                     actual_player.add_turn_in_prison()
 
                     if comptador_dobles > 0:
@@ -182,9 +180,6 @@ class Board:
             self._current_player_index += 1 #Passem al següent jugador
             if self._current_player_index == self._number_players:
                 self._current_player_index = 0
-        
-            print()
-
 
     def get_tile_index(self, index: int) -> Tile:
         '''Method to get a tile given its index'''
