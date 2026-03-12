@@ -359,6 +359,3 @@ def build_tile(board: Board, data: dict[str, Any]) -> Tile:
         return Card(board, data['position'], data['name'], data['type'], data['description'])
     else:     
         return Tile(board, data['position'], data['name'], data['type'], data['description'])
-
-    
-

@@ -12,7 +12,9 @@ El mòdul main és el programa principal que crea la carpeta en què s'emmagatze
 ### Mòdul board
 El mòdul board s'encarrega de gestionar el flux del joc, els torns i el tauler. En primer lloc, s'encarrega de construir tots els jugadors, cartes, i caselles del joc. En segon lloc, conté tota una sèrie de mètodes per a poder consultar tot tipus d'informació relacionada amb la partida, com el nombre de jugadors, l'index d'una casella, quin és el jugador actual... Finalment, s'encarrega de fer que, mentres quedi més d'un jugador "viu", es jugui automàticament. A continuació s'adjunta un diagrama amb la lògica que segueix el mètode play. 
 
-![Diagrama de flux de board.play()](diagrama_board.png)
+
+![Diagrama de flux de board.play(). Part 1](diagrama_1.png)
+![Diagrama de flux de board.play(). Part 2](diagrama_2.png)
 
 ### Mòdul player
 El mòdul player s'encarrega de tot allò relacionat amb les accions dels jugadors, la seva representació al taulell, les seves propietats i estat financer... Inclou mètodes per a poder accedir i modificar informació com els seus diners, les seves propietats, quants torns porten a la presó, moure el jugador un número de caselles o moure'l a una casella determinada, i molt més.

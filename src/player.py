@@ -84,10 +84,6 @@ class Player:
         '''Returns the amount of get out of jail card the player has'''
         return self._get_out_of_jail_free_cards
 
-    def turns_in_prison(self) -> int: 
-        '''Returns the amount of turns the player has spent in prison'''
-        return self._turns_in_prison
-
     def owned_properties(self) -> list[Property]: 
         '''Returns a list of Property with all properties owned by the player'''
         return self._owned_properties
@@ -119,7 +115,7 @@ class Player:
         self._owned_properties.append(property)
   
     def move(self, steps:int, board:Board) -> None:
-        '''Experimntal method to move a player across the board'''
+        '''Method to move a player across the board'''
         old_position = self._position
         self._position = (old_position + steps) % 40
 
@@ -167,6 +163,11 @@ class Player:
     
 
     #funcions gestió pressó
+
+    def turns_in_prison(self) -> int: 
+        '''Returns the amount of turns the player has spent in prison'''
+        return self._turns_in_prison
+    
     def add_get_out_of_jail_card(self) -> None:
         '''Method that adds one get out of jail card to this player'''
         self._get_out_of_jail_free_cards += 1
