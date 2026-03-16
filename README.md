@@ -41,6 +41,15 @@ El mòdul strategy s'encarrega de les decisions estratègiques que pren cada jug
 
 - **Post-turn actions**: un cop complides les obligacions de la casella en què cau, s'itera sobre totes les propietats del jugador per a veure quines accions de post-torn hi pot realitzar. Per a no complicar més la cosa, la llista amb totes les propietats no està ordenada de cap manera específica, simplement està ordenada segons l'ordre d'addició a la llista.
 
+## Joc de proves
+S'han inclòs una sèrie de jocs de proves per a garantitzar que totes les funcionalitats del Monopoly estiguin ben implementades, com per exemple el funcionament dels torns a la presó, el pagament del lloguer i l'hipoteca... Tots els tests segueixen una estructura molt similar. 
+- **Input**: S'elimina l'input que es demana normalment a l'inici de la partida, i es subsitueix pel número de jugadors establert a cada test (normalment 2). 
+- **Condicions del test**: Es creen les condiciones necessàries per a poder dur a terme el test, com per exemple que un jugador comenci amb X diners, que ja tingui una propietat, que ja estigui a la presó, o que comenci en una casella determinada. A més a més, en aquells tests en què intervenen cartes de Chance o Community Chest, es força que la següent carta que s'esculli en robar de la baralla sigui la carta desitjada.
+- **Simulació dels daus**: Es crea una funció mock_randint que substituirà la funció random.randint que es crida a board en generar els nous daus. 
+- **Simulació alive_players**: Es crea una funció mock_alive_players, que substituirà el mètode alive_players de board quan es crida a board.play(), per a comprovar quants jugadors queden vius. D'aquesta manera, ens permetrà acabar la partida quan així ho desitgem.
+- **Execució de la partida de test i asserts**: S'executa la partida de test mitjançant tauler.play() i es fan servir els asserts pertinents per a comprovar que tot ha anat correctament. A cada assert s'adjunta un missatge d'error per si fos el cas que no es compleix la condició saber què és el que està fallant.
+
+
 ## Instruccions
 - **Pas 1**: Executa el programa main.py i introdueix el nombre de jugadors (1-4) que dessitges a la partida. Veuràs que es crea una carpeta anomenada output en què es guarden totes les imatges dels taulells. 
 - **Pas 2**: Posa aquesta comanda (o alguna cosa similar al teu ordenador) a la terminal per a crear el fitxer partida.html: **python3 src/slideshow.py partida.html output/tauler-*.svg**

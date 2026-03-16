@@ -47,9 +47,11 @@ class Board:
         self._numero_taulell = 0
 
     def numero_taulell(self) -> int:
+        '''Returns the current board's number'''
         return self._numero_taulell
     
     def nou_numero_taulell(self) -> None:
+        '''Creates a new board number'''
         self._numero_taulell += 1
 
     def players(self) -> list[Player]: 
@@ -117,7 +119,7 @@ class Board:
                     self.nou_numero_taulell()
                     break
 
-                if actual_player.is_in_prison() and not self.out_of_prison(actual_player,comptador_dobles): #si no surt de la presó s'acaba el torn
+                if actual_player.is_in_prison() and not self.out_of_prison(actual_player,comptador_dobles):
                         break
                         
                 total_dice = self._dice1 + self._dice2 
@@ -127,8 +129,7 @@ class Board:
                 if not self.movement(total_dice, actual_player): #moviment del jugador, crida land-on i crida bankruptcy
                     break
 
-                if actual_player.is_in_prison(): 
-                    '''per si el land_on l'ha portat a la presó'''
+                if actual_player.is_in_prison(): #per si el land_on l'ha portat a la presó
                     self.nou_numero_taulell()
                     filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
                     draw(self, filename)
@@ -152,6 +153,7 @@ class Board:
 
 
     def out_of_prison(self, actual_player:Player,comptador_dobles:int) -> bool:
+        '''Returns true if the player leaves prison this turn'''
         actual_player.add_turn_in_prison()
 
         if comptador_dobles > 0:
@@ -175,6 +177,7 @@ class Board:
 
 
     def movement(self, total_dice:int, actual_player:Player) -> bool:
+        '''Returns True if the player moves normally and False if the player stops moving due to bankruptcy'''
         actual_player.move(total_dice,self)
 
         filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
@@ -204,6 +207,7 @@ class Board:
     
 
     def final_draw(self, actual_player:Player, destination:int) -> None:
+        '''Executes, if necessary, the final draw of the board in a given turn'''
         if destination != actual_player.position():
             self.nou_numero_taulell() #hem caigut a chance o go to jail, així que tornem a dibuixar
             filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
@@ -212,7 +216,6 @@ class Board:
         else: #no ens hem tornat a moure, actualitzem el dibuix que només tenia move per a mostrar els canvis en diners, propietats...
             filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
             draw(self, filename)
-
 
 
     def get_tile_index(self, index: int) -> Tile:

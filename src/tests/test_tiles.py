@@ -43,7 +43,7 @@ def test_compra_una_propietat():
 
 def test_compra_cases():
     '''Donem al jugador ja dues propietats que completen un color, 
-    i mirem si quan té la oportunita compra o no una casa a cada carrer'''
+    i mirem si quan té la oportunitat compra o no una casa a cada carrer'''
     import builtins
     builtins.input = lambda _: "2" #per no haver de demanar l'input 
 
@@ -90,7 +90,7 @@ def test_compra_cases():
 
 
 def test_conversió_hotels():
-    '''Comprova que la 5a casa es covnerteix en hotel'''
+    '''Comprova que la 5a casa es converteix en hotel'''
     import builtins
     builtins.input = lambda _: "2" #per no haver de demanar l'input 
 
@@ -143,7 +143,7 @@ def test_conversió_hotels():
 
 
 def test_different_rents():
-    '''Portem al jugador de la casella 39 a la 1 i després a la 5. La casella 1 és propieta del rival, que també té la 3
+    '''Portem al jugador de la casella 39 a la 1 i després a la 5. La casella 1 és propietat del rival, que també té la 3
     i per tant té el color set marró. La casella 5 també és del rival, que també té la 15 i per tant s'ha de pagar el doble
     a les estacions'''
     import builtins
@@ -206,6 +206,7 @@ def test_different_rents():
 
 
 def test_mortgaged():
+    '''Comprovem que si la casella està hipotecada no es paga res'''
     import builtins
     builtins.input = lambda _: "2" #per no haver de demanar l'input 
 
@@ -243,10 +244,11 @@ def test_mortgaged():
     tauler.alive_players = lambda: mock_alive_players(tauler)
     tauler.play()
 
-    assert jugador.money() == 1500, "ERROR: La Property està hipotecada eprò s'ha pagat rent igualment"
+    assert jugador.money() == 1500, "ERROR: La Property està hipotecada però s'ha pagat rent igualment"
 
 
 def test_can_mortgage():
+    '''Comprovem que si el carrer té cases no es pot hipotecar'''
     import builtins
     builtins.input = lambda _: "2" #per no haver de demanar l'input 
 
@@ -275,7 +277,9 @@ def test_can_mortgage():
 
     assert propietat1.can_mortgage() == False, "ERROR: La property té cases i per tant NO s'hauria de poder hipotecar"
 
+
 def test_can_sell_house():
+    '''Comprovem que la venta uniforme de cases funciona correctament'''
     import builtins
     builtins.input = lambda _: "2" #per no haver de demanar l'input 
 
@@ -304,3 +308,45 @@ def test_can_sell_house():
 
     assert propietat1.can_sell_house() == False, "ERROR: No es pot vendre aquesta casa per la venda de cases uniforme"
 
+
+def test_unmortgage():
+    '''Comprova que si té els diners necessaris, el jugador Advanced deshipoteca correctament la casella'''
+    import builtins
+    builtins.input = lambda _: "2" #per no haver de demanar l'input 
+
+    tauler = Board(
+        tiles_json_path="src/data/tiles.json",
+        chance_json_path="src/data/chance.json",
+        community_chest_json_path="src/data/community-chest.json",
+        players_json_path="src/data/players.json"
+    )
+
+    jugador = tauler.players()[0]
+
+    propietat = tauler.get_tile_index(39)
+    assert isinstance(propietat,Street)
+    jugador.new_property(propietat)
+    propietat.set_owner(jugador)
+    propietat.mortgage()
+
+
+    # Fem servir un iterador: cada vegada que cridem next(), ens dóna el següent número
+    valors_daus = iter([6, 4]) 
+    
+    def mock_randint(a:int, b:int):
+        return next(valors_daus)
+
+    random.randint = mock_randint    
+    
+    # Fem que el bucle de Board.play s'aturi després d'una iteració
+    comptador = [0, 2] # Llista per simular l'estat
+    def mock_alive_players(self:Board):
+        if len(comptador) > 1:
+            return comptador.pop()
+        return 1
+    
+    tauler.alive_players = lambda: mock_alive_players(tauler)
+    tauler.play()
+
+    assert jugador.money() == 1500 - int(propietat.get_mortgage() * 1.1), "ERROR: No s'ha pagat el que s'hauria d'haver pagat per deshipotecar"
+    assert not propietat.is_tile_mortgaged(), "ERROR: No s'ha deshipotecat la casella"

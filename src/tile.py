@@ -106,7 +106,7 @@ class Property(Tile):
 
     def get_unmortgage_price(self) -> int:
         '''Returns the price that has to be paid for the property to be unmortgaged'''
-        return int(self.get_mortgage() + self.get_mortgage() * 0.1)
+        return int(self.get_mortgage() * 1.1)
 
     def mortgage(self) -> None:
         '''Method that "internally" sets the property to mortgaged'''
@@ -194,6 +194,7 @@ class Street(Property):
             return self._house_cost
         
     def get_house_sell_price(self) -> int:
+        '''Method that returns the amount of money given by selling a house or hotel for this Street'''
         if self.amount_houses() == 5:
             return self._hotelcost // 2
         else:
@@ -223,9 +224,6 @@ class Street(Property):
         
         if houses > 5 or not owner.has_color_set(self.color) or owner.money() < self.get_house_cost(): 
             return False
-        
-        if not owner.has_color_set(self.color):
-            return False 
         
         color_set = [street for street in owner.owned_properties()if isinstance(street,Street) and street.color == self.color and street != self]
         
@@ -316,9 +314,9 @@ class Utility(Property):
         owner = self.get_owner()
         assert owner != None
         if owner.has_all_utilities():
-            return sum(self._board.dice()) * 10
+            return sum(self.board().dice()) * 10
         else: 
-            return sum(self._board.dice()) * 4
+            return sum(self.board().dice()) * 4
 
 
 class Tax(Tile):
