@@ -44,6 +44,13 @@ class Board:
         self._dice1 = 0
         self._dice2 = 0
         self._alive_players = self._number_players
+        self._numero_taulell = 0
+
+    def numero_taulell(self) -> int:
+        return self._numero_taulell
+    
+    def nou_numero_taulell(self) -> None:
+        self._numero_taulell += 1
 
     def players(self) -> list[Player]: 
         '''Returns a list of Player with all players'''
@@ -82,7 +89,6 @@ class Board:
     def play(self) -> None:
         '''Plays'''
         draw(self, "output/tauler-000.svg")
-        numero_prova_taulell = 0
         
         while self.alive_players() > 1:
             actual_player = self.current_player()
@@ -106,80 +112,108 @@ class Board:
                     actual_player.move_to(self.jail_position())
                     actual_player.put_in_prison()
                     
-                    filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
+                    filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
                     draw(self, filename)
-                    numero_prova_taulell += 1
+                    self.nou_numero_taulell()
                     break
-                
-                if actual_player.is_in_prison(): #dues maneres de sortir de la presó, i si no dibuixem i passem torn
-                    actual_player.add_turn_in_prison()
 
-                    if comptador_dobles > 0:
-                        actual_player.release_from_prison()
-                    elif actual_player.get_out_of_jail_free_cards() > 0:
-                        actual_player.release_from_prison()
-                        actual_player.use_get_out_of_jail_card()
-                    elif actual_player.turns_in_prison() == 3:
-                        filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
-                        draw(self, filename)
-                        numero_prova_taulell += 1
-                        actual_player.release_from_prison()
-                        break
-                    else:
-                        filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
-                        draw(self, filename)
-                        numero_prova_taulell += 1
+                if actual_player.is_in_prison() and not self.out_of_prison(actual_player,comptador_dobles): #si no surt de la presó s'acaba el torn
                         break
                         
-
                 total_dice = self._dice1 + self._dice2 
                 old_position = actual_player.position()
                 destination = (old_position + total_dice) % 40
-                actual_player.move(total_dice,self)
 
-                filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
-                draw(self, filename)
+                if not self.movement(total_dice, actual_player): #moviment del jugador, crida land-on i crida bankruptcy
+                    break
 
-                landed_tile = self.get_tile_index(actual_player.position())
-                landed_tile.land_on(actual_player,1,self)
-
-                actual_position = self.get_tile_index(actual_player.position())                
-                if actual_player.money() < 0: #bankruptcy
-                    
-                    from tile import Property 
-                    if isinstance(actual_position, Property):
-                        actual_player.bankruptcy(actual_position.get_owner(),self)
-                    else:
-                        actual_player.bankruptcy(None,self)
-                    
-                    filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
+                if actual_player.is_in_prison(): 
+                    '''per si el land_on l'ha portat a la presó'''
+                    self.nou_numero_taulell()
+                    filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
                     draw(self, filename)
-                    numero_prova_taulell += 1
-                    self._dice1, self._dice2 = -1,0 #per si un cas la tirada en què cau en bancarrota havia tret dobles
+                    self.nou_numero_taulell()
                     break
 
                 actual_player.post_turn_actions()
-
-
+                
                 if (actual_player.position() == 0 or actual_player.position() < old_position - 3) and not actual_player.is_in_prison() and not actual_player.is_bankrupt(): #casella de sortida
                     #old position - 3 per tenir en compte les cartes de Chance que fan anar 3 caselles enrere
                     actual_player.add_money(const.GO_SALARY)
 
-                if destination != actual_player.position():
-                    numero_prova_taulell += 1 #hem caigut a chance o go to jail, així que tornem a dibuixar
-                    filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
-                    draw(self, filename)
-
-                else: #no ens hem tornat a moure, actualitzem el dibuix que només tenia move per a mostrar els canvis en diners, propietats...
-                    filename = f"output/tauler-{numero_prova_taulell + 1:03d}.svg"
-                    draw(self, filename)
+                self.final_draw(actual_player,destination)
                 
-                numero_prova_taulell += 1 #Nova tirada de daus -> nou taulell
+                self.nou_numero_taulell() #Nova tirada de daus -> nou taulell
             
 
             self._current_player_index += 1 #Passem al següent jugador
             if self._current_player_index == self._number_players:
                 self._current_player_index = 0
+
+
+    def out_of_prison(self, actual_player:Player,comptador_dobles:int) -> bool:
+        actual_player.add_turn_in_prison()
+
+        if comptador_dobles > 0:
+            actual_player.release_from_prison()
+            return True
+        elif actual_player.get_out_of_jail_free_cards() > 0:
+            actual_player.release_from_prison()
+            actual_player.use_get_out_of_jail_card()
+            return True
+        elif actual_player.turns_in_prison() == 3:
+            filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
+            draw(self, filename)
+            self.nou_numero_taulell()
+            actual_player.release_from_prison()
+            return False
+        else:
+            filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
+            draw(self, filename)
+            self.nou_numero_taulell()
+            return False
+
+
+    def movement(self, total_dice:int, actual_player:Player) -> bool:
+        actual_player.move(total_dice,self)
+
+        filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
+        draw(self, filename) #dibuixem només el primer moviment
+
+        landed_tile = self.get_tile_index(actual_player.position())
+        landed_tile.land_on(actual_player,1,self)
+
+
+        actual_position = self.get_tile_index(actual_player.position())                
+        if actual_player.money() < 0: #bankruptcy
+            
+            from tile import Property 
+            if isinstance(actual_position, Property):
+                actual_player.bankruptcy(actual_position.get_owner(),self)
+            else:
+                actual_player.bankruptcy(None,self)
+            
+            self.nou_numero_taulell()
+            filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
+            draw(self, filename)
+            self.nou_numero_taulell()
+            self._dice1, self._dice2 = -1,0 #per si un cas la tirada en què cau en bancarrota havia tret dobles
+            return False
+        
+        return True
+    
+
+    def final_draw(self, actual_player:Player, destination:int) -> None:
+        if destination != actual_player.position():
+            self.nou_numero_taulell() #hem caigut a chance o go to jail, així que tornem a dibuixar
+            filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
+            draw(self, filename)
+
+        else: #no ens hem tornat a moure, actualitzem el dibuix que només tenia move per a mostrar els canvis en diners, propietats...
+            filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
+            draw(self, filename)
+
+
 
     def get_tile_index(self, index: int) -> Tile:
         '''Method to get a tile given its index'''

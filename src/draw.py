@@ -316,6 +316,8 @@ def draw_player_circles(d: dw.Drawing, board: Board, show_number: bool = False) 
     radius = 16
     # Distribute circles so they don't overlap on same tile
     for i, player in enumerate(players):
+        if player.is_bankrupt():
+            continue
         cx, cy = tile_center(player.position())
         same_tile = [
             j for j, p in enumerate(players) if p.position() == player.position()
