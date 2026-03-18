@@ -320,7 +320,7 @@ def draw_player_circles(d: dw.Drawing, board: Board, show_number: bool = False) 
             continue
         cx, cy = tile_center(player.position())
         same_tile = [
-            j for j, p in enumerate(players) if p.position() == player.position()
+            j for j, p in enumerate(players) if p.position() == player.position() and not p.is_bankrupt()
         ]
         idx = same_tile.index(i)
         n_on_tile = len(same_tile)

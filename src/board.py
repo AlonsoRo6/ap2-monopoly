@@ -196,10 +196,6 @@ class Board:
             else:
                 actual_player.bankruptcy(None,self)
             
-            self.nou_numero_taulell()
-            filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
-            draw(self, filename)
-            self.nou_numero_taulell()
             self._dice1, self._dice2 = -1,0 #per si un cas la tirada en què cau en bancarrota havia tret dobles
             return False
         

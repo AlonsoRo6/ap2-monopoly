@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from board import Board
     from tile import Property, Tile
 
-
+from draw import draw
 
 class Player:
     _board: Board
@@ -243,6 +243,12 @@ class Player:
         board.eliminate_player()
         self._bankruptcy = True
 
+        board.nou_numero_taulell()
+        filename = f"output/tauler-{board.numero_taulell() + 1:03d}.svg"
+        draw(board, filename)
+        board.nou_numero_taulell()
+
+        
 def build_player(board: Board, data: dict[str, Any]) -> Player:
     """Build a Player from JSON-like dict with 'name', 'piece', and 'color' keys."""
     return Player(board, data["name"], data["piece"], data["color"], data["index"])

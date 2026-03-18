@@ -31,6 +31,8 @@ El mòdul strategy s'encarrega de les decisions estratègiques que pren cada jug
 
 
 ## Decisions de disseny
+- **Elecció del nombre de jugadors**: com que no s'especificava de quina manera s'havia de poder escollir el nombre de jugadors de cada patida, vaig decidir que abans de començar es demanés, mitjançant un missatge a la terminal, el nombre de jugadors. 
+
 - **Mètode land_on**: en comptes d'implementar un llarguíssim mètode land_on ple d'ifs per a tots els tipus de caselles, vaig decidir fer ús del polimorfisme i implementar un mètode land_on a cada subclasse de la classe Tile.
 
 - **Sistema de fallida**: el sistema de fallida ha esta una mica peculiar en aquest projecte, ja que estem limitats per unes normes més senzilles de les normals per tal de fer el projecte més senzill. Normalment, quan un jugador cau a una casella, pot realitzar totes les accions que vulgui, com hipotecar, vendre cases, negociar, etc., però en el nostre cas primer s'ha de complir amb les obligacions de la casella i després realitzar les accions post-torn. Per aquest motiu, en el monopoly, quan un jugador entra en fallida, primer intenta pagar el seu deute venent tot el que pot, i després, si continua sense poder pagar, li dona tot el seu patrimoni al jugador que li ha provocat la fallida. En el cas d'aquest projecte això no és possible, així que vaig decidir que les propietats es traspassessin al jugador que provoca la fallida tal i com les tenia l'altre jugador. En canvi, si a qui li deu diners és al banc, totes les cases es treuen per a que altres jugadors puguin tornar a comprar les propietats sense les cases.
@@ -41,12 +43,18 @@ El mòdul strategy s'encarrega de les decisions estratègiques que pren cada jug
 
 - **Post-turn actions**: un cop complides les obligacions de la casella en què cau, s'itera sobre totes les propietats del jugador per a veure quines accions de post-torn hi pot realitzar. Per a no complicar més la cosa, la llista amb totes les propietats no està ordenada de cap manera específica, simplement està ordenada segons l'ordre d'addició a la llista.
 
+
 ## Joc de proves
 S'han inclòs una sèrie de jocs de proves per a garantitzar que totes les funcionalitats del Monopoly estiguin ben implementades, com per exemple el funcionament dels torns a la presó, el pagament del lloguer i l'hipoteca... Tots els tests segueixen una estructura molt similar. 
+
 - **Input**: S'elimina l'input que es demana normalment a l'inici de la partida, i es subsitueix pel número de jugadors establert a cada test (normalment 2). 
+
 - **Condicions del test**: Es creen les condiciones necessàries per a poder dur a terme el test, com per exemple que un jugador comenci amb X diners, que ja tingui una propietat, que ja estigui a la presó, o que comenci en una casella determinada. A més a més, en aquells tests en què intervenen cartes de Chance o Community Chest, es força que la següent carta que s'esculli en robar de la baralla sigui la carta desitjada.
+
 - **Simulació dels daus**: Es crea una funció mock_randint que substituirà la funció random.randint que es crida a board en generar els nous daus. 
+
 - **Simulació alive_players**: Es crea una funció mock_alive_players, que substituirà el mètode alive_players de board quan es crida a board.play(), per a comprovar quants jugadors queden vius. D'aquesta manera, ens permetrà acabar la partida quan així ho desitgem.
+
 - **Execució de la partida de test i asserts**: S'executa la partida de test mitjançant tauler.play() i es fan servir els asserts pertinents per a comprovar que tot ha anat correctament. A cada assert s'adjunta un missatge d'error per si fos el cas que no es compleix la condició saber què és el que està fallant.
 
 

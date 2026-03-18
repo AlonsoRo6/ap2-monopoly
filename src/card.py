@@ -7,7 +7,6 @@ if TYPE_CHECKING:
 
 from typing import Any
 
-
 class Card:
 
     def __init__(
@@ -174,7 +173,7 @@ class Pay_Players(Card):
     def execute(self,player:Player,board:Board) -> None:
         '''Makes the player pay the amount of money instructed by the card to each remaining player'''
         for oponent in board.players():
-            if not oponent.is_bankrupt():
+            if oponent != player and not oponent.is_bankrupt():
                 oponent.add_money(self.get_amount())
                 player.add_money(-self.get_amount())
 
