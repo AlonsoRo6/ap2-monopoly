@@ -60,9 +60,11 @@ class Move_To(Card):
     def execute(self, player:Player, board:Board) -> None:
         '''Executes the action instructed by the card'''
         player.move_to(self.get_position())
+        
         board.nou_numero_taulell()
         filename = f"output/tauler-{board.numero_taulell() + 1:03d}.svg"
         draw(board, filename)
+
         tile = board.get_tile_index(self.get_position())
         tile.land_on(player,1,board)
 
@@ -80,9 +82,11 @@ class Move_To_Station(Card):
         '''Makes the player go to the nearest station'''
         tile = player.find_next_tile_of_type(board,"station")
         player.move_to(tile.position())
+        
         board.nou_numero_taulell()
         filename = f"output/tauler-{board.numero_taulell() + 1:03d}.svg"
         draw(board, filename)
+
         tile.land_on(player,self.get_rent_multiplier(),board)
 
 class Move_To_Utility(Card):
@@ -98,9 +102,11 @@ class Move_To_Utility(Card):
         '''Makes the player go to the nearest utility'''
         tile = player.find_next_tile_of_type(board,"utility")
         player.move_to(tile.position())
+
         board.nou_numero_taulell()
         filename = f"output/tauler-{board.numero_taulell() + 1:03d}.svg"
         draw(board, filename)
+
         tile.land_on(player,self.get_rent_multiplier(),board)
 
 class Get_Out_Of_Jail(Card):
@@ -123,9 +129,11 @@ class Move_Back(Card):
     def execute(self, player:Player, board:Board) -> None:
         '''Moves the player the amount of positions given back'''
         player.move_to(player.position()-self.get_spaces())
+
         board.nou_numero_taulell()
         filename = f"output/tauler-{board.numero_taulell() + 1:03d}.svg"
         draw(board, filename)
+
         tile = board.get_tile_index(player.position())
         tile.land_on(player,1,board)
 

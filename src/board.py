@@ -33,7 +33,7 @@ class Board:
         self._community = Deck(community_chest_json_path)
 
         self._number_players = int(input('Number of players: ')) 
-        assert 0 < self._number_players <= const.MAX_PLAYERS, '0 < number of players <= MAX_PLAYERS'
+        assert 1 < self._number_players <= const.MAX_PLAYERS, '1 < number of players <= MAX_PLAYERS'
 
         with open(players_json_path, 'r', encoding='utf-8') as json_players:
             data_players = json.load(json_players)
@@ -123,7 +123,6 @@ class Board:
                         
                 total_dice = self._dice1 + self._dice2 
                 old_position = actual_player.position()
-                #destination = (old_position + total_dice) % 40
 
                 if not self.movement(total_dice, actual_player): #moviment del jugador, crida land-on i crida bankruptcy
                     break
@@ -175,15 +174,8 @@ class Board:
         filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
         draw(self, filename) #dibuixem provisionalment només el primer moviment
         
-        #past_position = actual_player.position()
-
         landed_tile = self.get_tile_index(actual_player.position())
         landed_tile.land_on(actual_player,1,self)
-
-        '''if actual_player.position() != past_position and actual_player.money() < 0:
-            self.nou_numero_taulell()
-            filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
-            draw(self, filename)'''
 
         actual_tile = self.get_tile_index(actual_player.position())                
         if actual_player.money() < 0: #bankruptcy        
@@ -207,19 +199,6 @@ class Board:
             return False
         
         return True
-    
-
-    def final_draw(self, actual_player:Player, destination:int) -> None:
-        '''Executes, if necessary, the final draw of the board in a given turn'''
-        '''if destination != actual_player.position():
-            self.nou_numero_taulell() #hem caigut a chance o go to jail, així que tornem a dibuixar
-            filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
-            draw(self, filename)
-
-        else: #no ens hem tornat a moure, actualitzem el dibuix que només tenia move per a mostrar els canvis en diners, propietats...'''
-        filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
-        draw(self, filename)
-
 
     def get_tile_index(self, index: int) -> Tile:
         '''Method to get a tile given its index'''

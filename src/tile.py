@@ -101,7 +101,7 @@ class Property(Tile):
             return False
         owner = self.get_owner()
         assert owner is not None
-        if any([street.amount_houses() > 0 for street in owner.owned_properties() if isinstance(street,Street) and street.color == self.color]):
+        if any([street.amount_houses() > 0 for street in owner.color_sets()[self.color]]):
             return False
         return True
 
@@ -184,22 +184,19 @@ class Street(Property):
                 return self._rent_with_4_houses
             else:
                 return self._rent_with_hotel
-        else:
-            return self._rent
+        return self._rent
     
     def get_house_cost(self) -> int:
         '''Method that returns the price of the next house or hotel for this Street'''
         if self.amount_houses() == 4:
             return self._hotelcost
-        else:
-            return self._house_cost
+        return self._house_cost
         
     def get_house_sell_price(self) -> int:
         '''Method that returns the amount of money given by selling a house or hotel for this Street'''
         if self.amount_houses() == 5:
             return self._hotelcost // 2
-        else:
-            return self._house_cost // 2
+        return self._house_cost // 2
 
     def buy_house(self) -> None:
         '''Adds a house to the street'''
@@ -330,11 +327,10 @@ class Utility(Property):
                 self.set_owner(player)
         elif owner != player:
             if not self.is_tile_mortgaged():
-                dice_total = sum(board.dice())
                 if rent_multiplier > 1:
-                    rent = dice_total * rent_multiplier
+                    rent = sum(board.dice()) * rent_multiplier
                 else:
-                    rent = dice_total * self.get_rent()
+                    rent = self.get_rent()
                 owner.add_money(rent)
                 player.add_money(-rent)
 

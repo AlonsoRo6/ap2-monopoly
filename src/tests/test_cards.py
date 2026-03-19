@@ -329,6 +329,22 @@ def test_pay_money() -> None:
     ), "ERROR: No ha pagat els diners adequats"
 
 
+def test_pay_money_bankrupt():
+    tauler, jugador = setup_test_scenario(19, "2")
+
+    jugador.add_money(-1499)
+    # Forcem que la propera carta sigui anar a la presó
+    carta = Pay_Money(0, "Speeding Fine", "Speeding fine £15", "pay_money", 50)
+    deck.Deck.get_card = lambda self: carta
+
+    tauler.play()
+
+    assert (
+        jugador.money() == 0
+    ), "ERROR: Hauria de tenir 0$"
+    assert jugador.is_bankrupt(), "ERROR: Hauria d'estar en bancarrota"
+
+
 def test_pay_players() -> None:
     """Test de les cartes d'acció pay_each_player"""
     tauler, jugador = setup_test_scenario(19, "3")
