@@ -1,10 +1,66 @@
 import random
 from board import Board
 from tile import *
+import os
+import shutil
+from card import *
+import deck
+
+def setup_test_scenario(posicio_inicial:int, input_val:str, dice_results:list[int]):
+    nom_carpeta = "output"
+    if os.path.exists(nom_carpeta):
+        shutil.rmtree(nom_carpeta)
+    
+    os.makedirs(nom_carpeta)
+    path_gitignore = os.path.join(nom_carpeta, ".gitignore")
+    with open(path_gitignore, "w") as f:
+        f.write("*\n")
+
+    import builtins
+    builtins.input = lambda _: input_val
+    
+    # Setup del Board
+    tauler = Board(
+        tiles_json_path="src/data/tiles.json",
+        chance_json_path="src/data/chance.json",
+        community_chest_json_path="src/data/community-chest.json",
+        players_json_path="src/data/players.json"
+    )
+    
+    # Fem servir un iterador: cada vegada que cridem next(), ens dóna el següent número
+    valors_daus = iter(dice_results) 
+    def mock_randint(a:int, b:int):
+        return next(valors_daus)
+
+    random.randint = mock_randint
+    
+    # Mock per aturar el bucle play()
+    comptador = [0, 2] # Llista per simular l'estat
+    def mock_alive_players(self:Board):
+        if len(comptador) > 1:
+            return comptador.pop()
+        return 1
+    
+    # Apliquem el mock al mètode de la instància
+    tauler.alive_players = lambda: mock_alive_players(tauler)
+    
+    jugador = tauler.current_player()
+    jugador.move_to(posicio_inicial)
+    
+    return tauler, jugador
 
 def test_fallida_banca():
     '''Deixem al jugador només amb 150€, el portem a la casella de tax de 200€, 
     i previament li haviem assignat una Street amb una casa construida'''
+    nom_carpeta = "output"
+    if os.path.exists(nom_carpeta):
+        shutil.rmtree(nom_carpeta)
+    
+    os.makedirs(nom_carpeta)
+    path_gitignore = os.path.join(nom_carpeta, ".gitignore")
+    with open(path_gitignore, "w") as f:
+        f.write("*\n")
+
     import builtins
     builtins.input = lambda _: "2" #per no haver de demanar l'input 
 
@@ -49,6 +105,14 @@ def test_fallida_banca():
 def test_fallida_jugador():
     '''Deixem al jugador només amb 150€, el portem a la casella d'una estació propietat de l'altre jugador, amb una rent de 25€, 
     i previament li haviem assignat al jugador una Street amb una casa construida'''
+    nom_carpeta = "output"
+    if os.path.exists(nom_carpeta):
+        shutil.rmtree(nom_carpeta)
+    
+    os.makedirs(nom_carpeta)
+    path_gitignore = os.path.join(nom_carpeta, ".gitignore")
+    with open(path_gitignore, "w") as f:
+        f.write("*\n")
     import builtins
     builtins.input = lambda _: "2" #per no haver de demanar l'input 
 
@@ -103,8 +167,16 @@ def test_zero_money():
     """Portem al jugador de la casella 39 a la 1 i després a la 5. La casella 1 és propieta del rival, que també té la 3
     i per tant té el color set marró. La casella 5 també és del rival, que també té la 15 i per tant s'ha de pagar el doble
     a les estacions"""
+    nom_carpeta = "output"
+    if os.path.exists(nom_carpeta):
+        shutil.rmtree(nom_carpeta)
+    
+    os.makedirs(nom_carpeta)
+    path_gitignore = os.path.join(nom_carpeta, ".gitignore")
+    with open(path_gitignore, "w") as f:
+        f.write("*\n")
+    
     import builtins
-
     builtins.input = lambda _: "2"  # per no haver de demanar l'input
 
     tauler = Board(
@@ -145,4 +217,29 @@ def test_zero_money():
 
     assert jugador.money() == 0, "ERROR: No s'ha pagat el que tocava"
     assert jugador.is_bankrupt() == False, "ERROR: El jugador no hauria d'estar en bancarrota"
+
+
+def test_chance_bancarrota():
+    tauler,jugador = setup_test_scenario(0,'2',[4,3])
+
+    jugador.add_money(-1500)
+    jugador.add_get_out_of_jail_card()
+    
+    rival = tauler.players()[1]
+    propietat_rival = tauler.get_tile_index(24)
+    assert isinstance(propietat_rival,Street)
+    rival.new_property(propietat_rival)
+    propietat_rival.set_owner(rival)
+
+    # Forcem que la propera carta sigui anar a la presó
+    carta = Move_To(1, "Advance to Trafalgar Square", "Advance to Trafalgar Square. If you pass Go, collect £200", "move_to_position", 24)
+    deck.Deck.get_card = lambda self: carta
+
+    tauler.play()
+
+    
+    assert jugador.position() == 24, "ERROR: El jugador hauria d'estar a la casella 24"
+    
+    assert jugador.is_bankrupt() == True, "ERROR: El jugador hauria d'estar marcat com a 'en presó'"
+    assert rival.get_out_of_jail_free_cards() == 1, "ERROR: El jugador 2 hauria d'haver rebut la targeta de sortir de la presó"
 

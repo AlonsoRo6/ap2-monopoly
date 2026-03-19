@@ -172,10 +172,13 @@ class Pay_Players(Card):
     
     def execute(self,player:Player,board:Board) -> None:
         '''Makes the player pay the amount of money instructed by the card to each remaining player'''
-        for oponent in board.players():
-            if oponent != player and not oponent.is_bankrupt():
-                oponent.add_money(self.get_amount())
-                player.add_money(-self.get_amount())
+        if player.money() - self.get_amount() * (board.alive_players()-1) < 0: 
+            player.add_money(-150)
+        else:
+            for oponent in board.players():
+                if oponent != player and not oponent.is_bankrupt():
+                        oponent.add_money(self.get_amount())
+                        player.add_money(-self.get_amount())
 
 class Collect_Players(Card):
     def __init__(self, id: int, title: str, description: str, action: str, amount:int) -> None:
@@ -189,9 +192,12 @@ class Collect_Players(Card):
     def execute(self,player:Player,board:Board) -> None:
         '''Makes the player collect the amount of money instructed by the card from each remaining player'''
         for oponent in board.players():
-            if not oponent.is_bankrupt():
-                oponent.add_money(-self.get_amount())
-                player.add_money(+self.get_amount())
+            if oponent != player and not oponent.is_bankrupt():
+                if oponent.money() - self.get_amount() < 0:
+                    oponent.bankruptcy(None,board)
+                else:
+                    oponent.add_money(-self.get_amount())
+                    player.add_money(+self.get_amount())
 
 def build_card(data: dict[str, Any]) -> Card: 
     card_action = data["action"]

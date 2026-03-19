@@ -92,6 +92,7 @@ class Property(Tile):
         return self._rent
     
     def get_mortgage(self) -> int:
+        '''Returns the money received when mortgaged'''
         return self._mortgage
     
     def can_mortgage(self) -> bool:
@@ -222,32 +223,32 @@ class Street(Property):
         assert owner is not None
         houses = self.amount_houses()
         
-        if houses > 5 or not owner.has_color_set(self.color) or owner.money() < self.get_house_cost(): 
+        if houses >= 5 or not owner.has_color_set(self.color) or owner.money() < self.get_house_cost(): 
             return False
         
-        color_set = [street for street in owner.owned_properties()if isinstance(street,Street) and street.color == self.color and street != self]
-        
+        color_set = owner.color_sets()[self.color]
+    
         if any([street.is_tile_mortgaged() for street in color_set]):
             return False
         
-        houses_same_color = [street.amount_houses() for street in color_set]
+        houses_same_color = [street.amount_houses() for street in color_set if street != self]
         
         if houses <= max(houses_same_color):
             return True
         
         return False
-    
+
     def can_sell_house(self) -> bool:
         '''Returns true if the player can sell a house or hotel on this street'''
         owner = self.get_owner()
         assert owner is not None
         houses = self.amount_houses()
 
-        if houses > 1:
+        if houses == 0:
             return False
 
-        color_set = [street for street in owner.owned_properties()if isinstance(street,Street) and street.color == self.color and street != self]
-        houses_same_color = [street.amount_houses() for street in color_set]
+        color_set = owner.color_sets()[self.color]
+        houses_same_color = [street.amount_houses() for street in color_set if street != self]
 
         if houses >= max(houses_same_color):
             return True

@@ -1,7 +1,7 @@
 # Primera Pràctica d'AP2: Monopoly
 
 ## Introducció
-Aquest projecte consisteix en l'automatització del joc de taula Monopoly, implementant tota la lògica del joc, gestió de propietats, targetes de sort i comunitat, i una interfície basada en fitxers svg i manipulable a través d'un fitxer html. Per a explicar el funcionamet del projecte i com està implementat, partirem de la base que ja tothom sap les normes del Monopoly i com jugar-hi.
+Aquest projecte consisteix en l'automatització del joc de taula Monopoly, implementant tota la lògica del joc, gestió de propietats, targetes de sort i comunitat, i una interfície basada en fitxers .svg i manipulable a través d'un fitxer html. Per a explicar el funcionamet del projecte i com està implementat, partirem de la base que ja tothom sap les normes del Monopoly i com jugar-hi.
 
 ## Arquitectura
 El projecte està estructurat en diferents mòduls independents, però tots ells interconnectats per a facilitar el manteniment del codi i l'escalabilitat. Tot seguit mencionaré tots aquells mòduls que no estaven ja implementats al codi proporcionat.
@@ -12,8 +12,10 @@ El mòdul main és el programa principal que crea la carpeta en què s'emmagatze
 ### Mòdul board
 El mòdul board s'encarrega de gestionar el flux del joc, els torns i el tauler. En primer lloc, s'encarrega de construir tots els jugadors, cartes, i caselles del joc. En segon lloc, conté tota una sèrie de mètodes per a poder consultar tot tipus d'informació relacionada amb la partida, com el nombre de jugadors, l'index d'una casella, quin és el jugador actual... Finalment, s'encarrega de fer que, mentres quedi més d'un jugador "viu", es jugui automàticament. A continuació s'adjunta un diagrama amb la lògica que segueix el mètode play. 
 
-
+1a Part:
 ![Diagrama de flux de board.play(). Part 1](diagrama_1.png)
+
+Continuació, 2a Part:
 ![Diagrama de flux de board.play(). Part 2](diagrama_2.png)
 
 ### Mòdul player
@@ -24,7 +26,7 @@ El mòdul player s'encarrega de tot allò relacionat amb les accions dels jugado
 El mòdul tile s'encarrega de totes aquelles accions directament relacionades amb una de les caselles del taulell. Inclou mètodes per a poder accedir al lloguer d'una propietat, la quantitat de cases que té construïdes, consultar el que es guanya hipotencant-la... De la mateixa manera, gestiona què és el que succeeix quan un jugador cau a cadascun dels tipus de caselles, per mitjà del mètode land_on(). Aquest mòdul està basat en una jerarquia molt senzilla amb la classe Tile i les subclasses Property (i subclasses Street, Station i Utility), Tax i Card.
 
 ### Mòdul card
-El mòdul card s'encarrega de totes les accions relaciones amb un carta de la sort o de la comunitat. Té una classe CArd i 11 subclasses, una per a cada una de les possibles accions que poden sortir a un carta (anar a una casella, anar a la presó, pagar X diners, rebre Y diners...)
+El mòdul card s'encarrega de totes les accions relaciones amb un carta de la sort o de la comunitat. Té una classe Card i 11 subclasses, una per a cada una de les possibles accions que poden sortir a un carta (anar a una casella, anar a la presó, pagar X diners, rebre Y diners...)
 
 ### Mòdul strategy
 El mòdul strategy s'encarrega de les decisions estratègiques que pren cada jugador. Depenent del tipus d'estratègia que els hi ha estat assignada, cada jugador prendrà unes decisions o unes altres, i decidirà si compra o no una casa o propietat, si hipoteca una propietat...
@@ -43,9 +45,13 @@ El mòdul strategy s'encarrega de les decisions estratègiques que pren cada jug
 
 - **Post-turn actions**: un cop complides les obligacions de la casella en què cau, s'itera sobre totes les propietats del jugador per a veure quines accions de post-torn hi pot realitzar. Per a no complicar més la cosa, la llista amb totes les propietats no està ordenada de cap manera específica, simplement està ordenada segons l'ordre d'addició a la llista.
 
+- **Go_Salary**: per tal de facilitar que la partida acabi en un número de partidews raonable, vaig decidir baixar el go_salary de 200$ a 50$, ja que si no la partida podia arribar a durar milers de torns. 
+
 
 ## Joc de proves
 S'han inclòs una sèrie de jocs de proves per a garantitzar que totes les funcionalitats del Monopoly estiguin ben implementades, com per exemple el funcionament dels torns a la presó, el pagament del lloguer i l'hipoteca... Tots els tests segueixen una estructura molt similar. 
+
+- **Creació de la carpeta per guardar les imatges**: Es crea, si encara no exisitia, la carpeta output, en què s'emmagatzemen els fitxers .svg corresponents a cada test. Cada test individual substituirà la carpeta output si ja existia, per tant si es desitja veure gràficament què passa al test s'ha d'anar un per un.
 
 - **Input**: S'elimina l'input que es demana normalment a l'inici de la partida, i es subsitueix pel número de jugadors establert a cada test (normalment 2). 
 
@@ -60,5 +66,13 @@ S'han inclòs una sèrie de jocs de proves per a garantitzar que totes les funci
 
 ## Instruccions
 - **Pas 1**: Executa el programa main.py i introdueix el nombre de jugadors (1-4) que dessitges a la partida. Veuràs que es crea una carpeta anomenada output en què es guarden totes les imatges dels taulells. 
-- **Pas 2**: Posa aquesta comanda (o alguna cosa similar al teu ordenador) a la terminal per a crear el fitxer partida.html: **python3 src/slideshow.py partida.html output/tauler-*.svg**
+
+- **Pas 2**: 
+Posa aquesta comanda (o alguna cosa similar al teu ordenador) a la terminal per a crear el fitxer partida.html:
+**python3 src/slideshow.py partida.html output/tauler-*.svg.** 
+Si el teu ordenador és Windows i la comanda anterior no funciona, prova aquesta comanda:
+**python3 src/slideshow.py partida.html $(Get-ChildItem output/*.svg)**
+
+
+
 - **Pas 3**. Obre el fitxer partida.html des de l'explorador d'arxius al teu navegador

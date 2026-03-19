@@ -54,6 +54,7 @@ class Board:
         '''Creates a new board number'''
         self._numero_taulell += 1
 
+
     def players(self) -> list[Player]: 
         '''Returns a list of Player with all players'''
         return self._players
@@ -91,7 +92,6 @@ class Board:
     def play(self) -> None:
         '''Plays'''
         draw(self, "output/tauler-000.svg")
-        
         while self.alive_players() > 1:
             actual_player = self.current_player()
             
@@ -104,9 +104,8 @@ class Board:
             self._dice1, self._dice2 = 0,0
             comptador_dobles = 0
             while self._dice1 == self._dice2: #Tirades dobles
-                
+
                 self._dice1, self._dice2 = random.randint(1,6), random.randint(1,6)
-                
                 if self._dice1 == self._dice2:
                     comptador_dobles += 1
 
@@ -129,13 +128,6 @@ class Board:
                 if not self.movement(total_dice, actual_player): #moviment del jugador, crida land-on i crida bankruptcy
                     break
 
-                if actual_player.is_in_prison(): #per si el land_on l'ha portat a la presó
-                    self.nou_numero_taulell()
-                    filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
-                    draw(self, filename)
-                    self.nou_numero_taulell()
-                    break
-
                 actual_player.post_turn_actions()
                 
                 if (actual_player.position() == 0 or actual_player.position() < old_position - 3) and not actual_player.is_in_prison() and not actual_player.is_bankrupt(): #casella de sortida
@@ -143,7 +135,6 @@ class Board:
                     actual_player.add_money(const.GO_SALARY)
 
                 self.final_draw(actual_player,destination)
-                
                 self.nou_numero_taulell() #Nova tirada de daus -> nou taulell
             
 
@@ -177,15 +168,21 @@ class Board:
 
 
     def movement(self, total_dice:int, actual_player:Player) -> bool:
-        '''Returns True if the player moves normally and False if the player stops moving due to bankruptcy'''
+        '''Returns True if the player moves normally and False if the player stops moving due to bankruptcy or has gone to prison'''
         actual_player.move(total_dice,self)
 
         filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
         draw(self, filename) #dibuixem només el primer moviment
+        
+        past_position = actual_player.position()
 
         landed_tile = self.get_tile_index(actual_player.position())
         landed_tile.land_on(actual_player,1,self)
 
+        if actual_player.position() != past_position and actual_player.money() < 0:
+            self.nou_numero_taulell() #hem caigut a chance o go to jail, així que tornem a dibuixar
+            filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
+            draw(self, filename)
 
         actual_position = self.get_tile_index(actual_player.position())                
         if actual_player.money() < 0: #bankruptcy
@@ -197,6 +194,13 @@ class Board:
                 actual_player.bankruptcy(None,self)
             
             self._dice1, self._dice2 = -1,0 #per si un cas la tirada en què cau en bancarrota havia tret dobles
+            return False
+        
+        if actual_player.is_in_prison():
+            self.nou_numero_taulell()
+            filename = f"output/tauler-{self.numero_taulell() + 1:03d}.svg"
+            draw(self, filename)
+            self.nou_numero_taulell()
             return False
         
         return True

@@ -5,7 +5,7 @@ from strategy import *
 
 if TYPE_CHECKING:
     from board import Board
-    from tile import Property, Tile
+    from tile import *
 
 from draw import draw
 
@@ -39,6 +39,11 @@ class Player:
         self._turns_in_prison = 0
         self._bankruptcy = False
 
+        self._colors = ['brown','light_blue','pink','orange','red','yellow','green','dark_blue']
+        self._color_sets: dict[str,list[Street]] = {color:[] for color in self._colors}
+        self._full_color_sets: dict[str,int] = {color:sum(1 for t in self.board().tiles() if getattr(t, "color", None) == color) for color in self._colors}
+        self._amount_stations = 0
+        self._amount_utilities = 0
 
         if self._index % 2 == 0:
             self._strategy = "Advanced"
@@ -64,10 +69,6 @@ class Player:
         '''Returns the player's index'''
         return self._index
 
-    def broke(self) -> bool:
-        """Return True if the player has negative money."""
-        return self._money < 0
-
     def money(self) -> int: 
         '''Returns the player's money'''
         return self._money
@@ -88,23 +89,20 @@ class Player:
         '''Returns a list of Property with all properties owned by the player'''
         return self._owned_properties
 
+    def color_sets(self) -> dict[str,list[Street]]:
+        return self._color_sets
+
     def has_color_set(self, color:str) -> bool:
         '''Returns True if the player has the color set of the color given'''
-        amount = sum(1 for property in self.owned_properties() if getattr(property,"color",None) == color)
-        
-        total_of_color = sum(1 for t in self.board().tiles() if getattr(t, "color", None) == color)
-
-        return amount == total_of_color
+        return len(self._color_sets[color]) == self._full_color_sets[color]
 
     def amount_stations(self) -> int:
         '''Returns the amount of stations the player has'''
-        amount = sum(1 for property in self.owned_properties() if property.type() == "station")
-        return amount
+        return self._amount_stations
 
     def has_all_utilities(self) -> bool:
         '''Returns True if the player has both utilities'''
-        amount = sum(1 for property in self.owned_properties() if property.type() == "utility")
-        return amount == 2
+        return self._amount_utilities == 2
     
     def add_money(self, amount:int) -> None: 
         '''Method that adds the given amount to the player's money'''
@@ -112,8 +110,15 @@ class Player:
 
     def new_property(self, property: Property) -> None:
         '''Method that adds the given property to the player's list of owned properties'''
+        from tile import Street, Station, Utility
         self._owned_properties.append(property)
-  
+        if isinstance(property, Street):
+            self._color_sets[property.color].append(property)
+        elif isinstance(property,Station):
+            self._amount_stations += 1
+        elif isinstance(property, Utility):
+            self._amount_utilities += 1
+
     def move(self, steps:int, board:Board) -> None:
         '''Method to move a player across the board'''
         old_position = self._position
