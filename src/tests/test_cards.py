@@ -195,6 +195,7 @@ def test_get_out_of_jail() -> None:
         "Get Out of Jail Free. This card may be kept until needed or sold",
         "get_out_of_jail_card",
         True,
+        "chance"
     )
     deck.Deck.get_card = lambda self: carta
 
@@ -498,3 +499,5 @@ def test_collect_players_bankrupt():
     assert (
         rival2.money() == 1500 - carta.get_amount()
     ), "ERROR: El jugador 2 no ha pagat"
+
+

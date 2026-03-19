@@ -60,7 +60,7 @@ class Move_To(Card):
     def execute(self, player:Player, board:Board) -> None:
         '''Executes the action instructed by the card'''
         player.move_to(self.get_position())
-        
+
         board.nou_numero_taulell()
         filename = f"output/tauler-{board.numero_taulell() + 1:03d}.svg"
         draw(board, filename)
@@ -110,13 +110,13 @@ class Move_To_Utility(Card):
         tile.land_on(player,self.get_rent_multiplier(),board)
 
 class Get_Out_Of_Jail(Card):
-    def __init__(self, id: int, title: str, description: str, action: str, keepCard: bool) -> None:
+    def __init__(self, id: int, title: str, description: str, action: str, keepCard: bool, deck_type:str) -> None:
         super().__init__(id, title, description, action)
-
+        self._deck_type = deck_type
     def execute(self, player:Player, board:Board) -> None:
         '''Provides the player with a get out of jail card'''
-        player.add_get_out_of_jail_card()
-
+        player.add_get_out_of_jail_card(self, board.get_deck(self._deck_type))
+        
 class Move_Back(Card):
     def __init__(self, id: int, title: str, description: str, action: str, spaces:int) -> None:
         super().__init__(id, title, description, action)
@@ -220,7 +220,7 @@ class Collect_Players(Card):
                     oponent.add_money(-self.get_amount())
                     player.add_money(+self.get_amount())
 
-def build_card(data: dict[str, Any]) -> Card: 
+def build_card(data: dict[str, Any],deck_type:str) -> Card: 
     card_action = data["action"]
     if card_action == "move_to_position":
         return Move_To(data["id"], data["title"], data["description"], data["action"], data["position"])
@@ -235,7 +235,7 @@ def build_card(data: dict[str, Any]) -> Card:
         return Collect_Money(data["id"], data["title"], data["description"], data["action"],data["amount"])
     
     elif card_action == "get_out_of_jail_card":
-        return Get_Out_Of_Jail(data["id"], data["title"], data["description"], data["action"],data["keepCard"])
+        return Get_Out_Of_Jail(data["id"], data["title"], data["description"], data["action"],data["keepCard"],deck_type)
     
     elif card_action == "move_back_spaces":
         return Move_Back(data["id"], data["title"], data["description"], data["action"],data["spaces"])

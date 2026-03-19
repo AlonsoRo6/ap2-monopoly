@@ -101,7 +101,7 @@ class Property(Tile):
             return False
         owner = self.get_owner()
         assert owner is not None
-        if any([street.amount_houses() > 0 for street in owner.color_sets()[self.color]]):
+        if isinstance(self,Street) and any([street.amount_houses() > 0 for street in owner.color_sets()[self.color]]):
             return False
         return True
 

@@ -1,7 +1,7 @@
 import random
 import deck
 from board import Board
-from card import Go_To_Jail
+from card import Go_To_Jail, Get_Out_Of_Jail
 import os
 import shutil
 
@@ -115,7 +115,7 @@ def test_sortir_presó_carta():
     
     jugador.put_in_prison()
     jugador.add_turn_in_prison()
-    jugador.add_get_out_of_jail_card()
+    jugador.add_get_out_of_jail_card(Get_Out_Of_Jail(8, 'Get Out of Jail Free', 'Get Out of Jail Free. This card may be kept until needed or sold', 'get_out_of_jail_card', True, "chance"), tauler.get_deck("chance"))
 
     assert jugador.turns_in_prison() == 1, "ERROR, hauria de portar un torns a la presó"
     tauler.play()
@@ -135,5 +135,25 @@ def test_tres_dobles():
     
     esta_a_la_preso = jugador.is_in_prison()
     assert esta_a_la_preso == True, "ERROR: El jugador hauria d'estar marcat com a 'en presó'"
+
+def test_get_out_of_jail_card_returned_to_deck():
+    '''Comprova que quan un jugador utilitza una carta de sortir de la presó,  aquesta es retorna correctament a la pila de descartades'''
+    tauler, jugador = setup_test_scenario(10, '2', [3, 2])
+
+    jugador.put_in_prison()
+    jugador.add_turn_in_prison()
+    
+    carta = Get_Out_Of_Jail(8, 'Get Out of Jail Free', 'Get Out of Jail Free. This card may be kept until needed or sold', 'get_out_of_jail_card', True, "chance")
+    deck_chance = tauler.get_deck("chance")
+    jugador.add_get_out_of_jail_card(carta, deck_chance)
+
+    cartes_abans = len(deck_chance.get_discard_pile())
+
+    tauler.play()
+
+    assert jugador.get_out_of_jail_free_cards() == 0, "ERROR: El jugador hauria d'haver utilitzat la carta"
+    assert not jugador.is_in_prison(), "ERROR: El jugador hauria d'estar fora de la presó"
+    assert len(deck_chance.get_discard_pile()) == cartes_abans + 1, "ERROR: La carta no s'ha retornat a la pila de descartades"
+    assert deck_chance.get_discard_pile()[-1] is carta, "ERROR: La carta retornada no és la mateixa que s'havia donat"
 
     

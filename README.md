@@ -1,78 +1,152 @@
 # Primera Pràctica d'AP2: Monopoly
 
-## Introducció
-Aquest projecte consisteix en l'automatització del joc de taula Monopoly, implementant tota la lògica del joc, gestió de propietats, targetes de sort i comunitat, i una interfície basada en fitxers .svg i manipulable a través d'un fitxer html. Per a explicar el funcionamet del projecte i com està implementat, partirem de la base que ja tothom sap les normes del Monopoly i com jugar-hi.
+## Índex
+ 
+1. [Instruccions d'ús](#instruccions-dús)
+2. [Arquitectura del projecte](#arquitectura-del-projecte)
+3. [Especificació de mòduls, classes i mètodes](#especificació-de-mòduls-classes-i-mètodes)
+4. [Decisions de disseny](#decisions-de-disseny)
+5. [Joc de proves](#joc-de-proves)
 
-## Arquitectura
+## Instruccions d'ús
+  
+**Pas 1.** Executa el programa principal i introdueix el nombre de jugadors (entre 2 i 4):
+ 
+```bash
+python3 src/main.py
+```
+ 
+S'crearà automàticament una carpeta `output/` amb tots els fotogrames `.svg` de la partida.
+ 
+**Pas 2.** Genera el fitxer HTML de visualització:
+ 
+```bash
+# macOS
+python3 src/slideshow.py partida.html output/tauler-*.svg
+ 
+# Windows (PowerShell)
+python3 src/slideshow.py partida.html $(Get-ChildItem output/*.svg)
+```
+ 
+**Pas 3.** Obre `partida.html` des de l'explorador de fitxers al teu navegador.
+ 
+---
+## Arquitectura del projecte
+ 
+```
+src/
+├── main.py           # Punt d'entrada
+├── board.py          # Tauler i flux del joc
+├── player.py         # Estat i accions dels jugadors
+├── tile.py           # Caselles del tauler
+├── card.py           # Cartes de Chance i Community Chest
+├── deck.py           # Baralla de cartes
+├── strategy.py       # Estratègies de decisió
+├── draw.py           # Renderitzat SVG
+├── const.py          # Constants globals
+├── slideshow.py      # Generació del visualitzador HTML
+├── data/
+│   ├── tiles.json
+│   ├── players.json
+│   ├── chance.json
+│   └── community-chest.json
+└── tests/
+    ├── test_tiles.py
+    ├── test_cards.py
+    ├── test_presó.py
+    ├── test_bancarrota.py
+    └── test_varied.py
+```
+---
+## Arquitectura del projecte
 El projecte està estructurat en diferents mòduls independents, però tots ells interconnectats per a facilitar el manteniment del codi i l'escalabilitat. Tot seguit mencionaré tots aquells mòduls que no estaven ja implementats al codi proporcionat.
 
-### Mòdul main
-El mòdul main és el programa principal que crea la carpeta en què s'emmagatzemen els fitxers .svg creats durant l'execució del programa i crea el tauler de joc a partir dels fitxers JSON proporcionats. A més a més, s'encarrega de començar el joc.
-
-### Mòdul board
-El mòdul board s'encarrega de gestionar el flux del joc, els torns i el tauler. En primer lloc, s'encarrega de construir tots els jugadors, cartes, i caselles del joc. En segon lloc, conté tota una sèrie de mètodes per a poder consultar tot tipus d'informació relacionada amb la partida, com el nombre de jugadors, l'index d'una casella, quin és el jugador actual... Finalment, s'encarrega de fer que, mentres quedi més d'un jugador "viu", es jugui automàticament. A continuació s'adjunta un diagrama amb la lògica que segueix el mètode play. 
-
+### `board.py`
+Conté la classe `Board`, que s'encarrega de gestionar el flux del joc, els torns i el tauler. En primer lloc, construeix tots els jugadors, cartes i caselles del joc a partir dels fitxers JSON. En segon lloc, conté tota una sèrie de mètodes per consultar informació de la partida: el jugador actual, les caselles, les baralles, l'estat dels daus, etc. Finalment, el mètode principal `play()` gestiona el bucle de joc: mentre quedi més d'un jugador viu, els jugadors que queden vius seguiran jugant. A continuació s'adjunten els diagrames de flux del mètode `play()`:
+ 
 1a Part:
 ![Diagrama de flux de board.play(). Part 1](diagrama_1.png)
-
+ 
 Continuació, 2a Part:
 ![Diagrama de flux de board.play(). Part 2](diagrama_2.png)
-
-### Mòdul player
-El mòdul player s'encarrega de tot allò relacionat amb les accions dels jugadors, la seva representació al taulell, les seves propietats i estat financer... Inclou mètodes per a poder accedir i modificar informació com els seus diners, les seves propietats, quants torns porten a la presó, moure el jugador un número de caselles o moure'l a una casella determinada, i molt més.
-
-
-### Mòdul tile
-El mòdul tile s'encarrega de totes aquelles accions directament relacionades amb una de les caselles del taulell. Inclou mètodes per a poder accedir al lloguer d'una propietat, la quantitat de cases que té construïdes, consultar el que es guanya hipotencant-la... De la mateixa manera, gestiona què és el que succeeix quan un jugador cau a cadascun dels tipus de caselles, per mitjà del mètode land_on(). Aquest mòdul està basat en una jerarquia molt senzilla amb la classe Tile i les subclasses Property (i subclasses Street, Station i Utility), Tax i Card.
-
-### Mòdul card
-El mòdul card s'encarrega de totes les accions relaciones amb un carta de la sort o de la comunitat. Té una classe Card i 11 subclasses, una per a cada una de les possibles accions que poden sortir a un carta (anar a una casella, anar a la presó, pagar X diners, rebre Y diners...)
-
-### Mòdul strategy
-El mòdul strategy s'encarrega de les decisions estratègiques que pren cada jugador. Depenent del tipus d'estratègia que els hi ha estat assignada, cada jugador prendrà unes decisions o unes altres, i decidirà si compra o no una casa o propietat, si hipoteca una propietat...
-
+ 
+### `player.py`
+Conté la classe `Player`, que s'encarrega de tot allò relacionat amb l'estat i les accions d'un jugador: el seu saldo, les seves propietats, la seva posició, l'estat de presó, les cartes de sortida de presó, el moviment pel tauler... Inclou també els mètodes `bankruptcy()` i `post_turn_actions()`, que gestionen respectivament la fallida del jugador i les decisions estratègiques que pren al final de cada tirada (construir cases, hipotecar, etc.).
+ 
+### `tile.py`
+Conté tota la lògica relacionada amb les caselles del tauler. Es basa en una jerarquia de classes: la classe base `Tile` i les subclasses `Tax`, `Card` i `Property` (que es subdivideix en `Street`, `Station` i `Utility`). Cada subclasse implementa el mètode `land_on()`, que defineix què passa quan un jugador cau en una casella d'aquella subclasse. A més a més, les caselles de tipus `Property` gestionen la compra, el lloguer, les hipoteques i la construcció de cases i hotels.
+ 
+```
+Tile
+├── Property
+│   ├── Street       (carrers amb cases i hotels)
+│   ├── Station      (estacions de tren)
+│   └── Utility      (empreses de serveis)
+├── Tax              (caselles d'impostos)
+└── Card             (caselles de Chance / Community Chest)
+```
+ 
+### `card.py`
+Conté tota la lògica relacionada amb les cartes de Chance i Community Chest. Té una estructura similar a `tile.py`: la classe base `Card` i 11 subclasses, una per a cada acció possible (moure's a una posició, anar a la presó, cobrar diners, pagar per propietats, etc.). Cada subclasse té el mètode `execute()`, que s'encarrega d'executar l'acció corresponent a la carta.
+ 
+### `deck.py`
+Conté la classe `Deck`, que gestiona una baralla de cartes: la construeix a partir d'un fitxer JSON, la barreja, i en permet robar cartes. Quan la baralla es queda sense cartes torna a barrejar les cartes descartades. Les cartes de sortida de presó no es descarten fins que s'utilitzen, i si la carta era de Chance va a la baralla de descartades de Chance i igual per a Community Chest
+ 
+### `strategy.py`
+Conté les classes d'estratègia que determinen les decisions que pren cada jugador. La classe base `Strategy` defineix els mètodes `should_buy_property()`, `should_build_house()`, `should_sell_house()`, `should_mortgage_property()` i `should_unmortgage_property()`. Hi ha dues implementacions diferents, tal i com es menciona a l'apartat [Decisions de disseny](#decisions-de-disseny): `SimpleStrategy` i `AdvancedStrategy`.
+ 
+### `const.py`
+Defineix les constants globals del joc: el saldo inicial dels jugadors (`START_MONEY = 1500`), el salari de GO (`GO_SALARY = 50`), el nombre màxim de jugadors (`MAX_PLAYERS = 4`) i la llista de colors de grups de propietats (`COLORS`)
+ 
+---
 
 ## Decisions de disseny
-- **Elecció del nombre de jugadors**: com que no s'especificava de quina manera s'havia de poder escollir el nombre de jugadors de cada patida, vaig decidir que abans de començar es demanés, mitjançant un missatge a la terminal, el nombre de jugadors. 
+ 
+### Polimorfisme a `land_on` i `execute`
+ En comptes d'implementar un llarguíssim mètode `land_on` ple d'ifs per a tots els tipus de caselles, vaig decidir fer ús del `polimorfisme` i implementar un mètode land_on a cada subclasse de la classe Tile. Igualment, cada subclasse de `Card` implementa el seu propi `execute`. Això permet afegir nous tipus de caselles o cartes sense modificar el codi existent, i fa que cada classe sigui responsable del seu propi comportament.
+ 
+### Sistema de fallida simplificat
+ El sistema de fallida ha esta una mica peculiar en aquest projecte, ja que estem limitats per unes normes més senzilles de les normals per tal de fer el projecte més senzill. Normalment, quan un jugador cau a una casella, pot realitzar totes les accions que vulgui, com hipotecar, vendre cases, negociar, etc., però en el nostre cas primer s'ha de complir amb les obligacions de la casella i després realitzar les accions post-torn. Per aquest motiu, en el monopoly, quan un jugador entra en fallida, primer intenta pagar el seu deute venent tot el que pot, i després, si continua sense poder pagar, li dona tot el seu patrimoni al jugador que li ha provocat la fallida. En el cas d'aquest projecte això no és possible, així que vaig decidir fer el següent:
+ 
+- **Fallida envers el banc** (casella de tax, carta de pagament...): totes les cases s'eliminen, les propietats queden sense propietari i tornen al mercat lliures.
+- **Fallida envers un altre jugador** (lloguer d'una propietat, carta de pagament a un altre jugador...): les propietats (amb les seves cases i estat hipotecat) es traspasssen íntegrament al creditor. Si aquest no pot pagar el 10% d'una hipoteca que rep, ell mateix pot entrar en fallida.
+ 
+### Estratègia assignada per índex
+ L'estratègia implementada és realment senzilla. Hi ha dues estratègies: SimpleStrategy i AdvancedStrategy, assignada a l'inici del joc la Simple als jugadors amb índex senar i la Advanced als jugadors amb índex parell. Els jugadors Advanced sempre mantenen unes reserves de diners (i per tant no compren si tot i tenir prou diners no són suficients per a mantenir-se per sobre de les reserves), i quan els seus diners baixen d'una certa quantitat, venen cases i propietats. En canvi, els jugadors Simple sempre que poden compren totes les propietats, no construeixen res, ni venen res.
+ 
+### Salari de GO reduït
+ Per tal de facilitar que la partida acabi en un número de partidews raonable, vaig decidir baixar el go_salary de 200$ a 50$, ja que si no la partida podia arribar a durar milers de torns. 
+ 
+### Elecció del nombre de jugadors
+ Com que no s'especificava de quina manera s'havia de poder escollir el nombre de jugadors de cada patida, vaig decidir que abans de començar es demanés, mitjançant un missatge a la terminal, el nombre de jugadors. En els tests, aquest input es simula automàticament.
+ 
+### Go_To_Jail i dobles
+ Si un jugador treu dobles i la carta de Chance o Community Chest l'envia a la presó, el torn s'acaba immediatament. Els dobles no li donen dret a una nova tirada.
+ 
+### Generació d'SVG per fotograma
+ Es genera un fitxer `.svg` diferent en els moments més significatius de la partida, intentant en tot moment que s'entengui què és el que està passant. Per exemple, si un jugador cau a una casella de Chance i aquesta l'obliga a anar a una altra casella, es crearan dos frames per a entendre millor el que ha passat. D'igual manera, quan un jugador entra en fallida, es crea un primer fram del jugador a la casella de la fallida sense haver realitzat la corresponent acció i després es mostra com el jugador s'elimina.
 
-- **Mètode land_on**: en comptes d'implementar un llarguíssim mètode land_on ple d'ifs per a tots els tipus de caselles, vaig decidir fer ús del polimorfisme i implementar un mètode land_on a cada subclasse de la classe Tile.
+### Control dels sets de color
+ Per tal de facilitar la cerca de carrers que formen part d'un color set complert, vaig decidir implementar un diccionari en què les claus són els colors dels diferents carrers i els valors són les propietats que es necessiten per a tenir el color set complert. De la mateixa manera, hi ha un altre diccionari per a cada jugador que indica quantes propietats de cada color set té.
 
-- **Sistema de fallida**: el sistema de fallida ha esta una mica peculiar en aquest projecte, ja que estem limitats per unes normes més senzilles de les normals per tal de fer el projecte més senzill. Normalment, quan un jugador cau a una casella, pot realitzar totes les accions que vulgui, com hipotecar, vendre cases, negociar, etc., però en el nostre cas primer s'ha de complir amb les obligacions de la casella i després realitzar les accions post-torn. Per aquest motiu, en el monopoly, quan un jugador entra en fallida, primer intenta pagar el seu deute venent tot el que pot, i després, si continua sense poder pagar, li dona tot el seu patrimoni al jugador que li ha provocat la fallida. En el cas d'aquest projecte això no és possible, així que vaig decidir que les propietats es traspassessin al jugador que provoca la fallida tal i com les tenia l'altre jugador. En canvi, si a qui li deu diners és al banc, totes les cases es treuen per a que altres jugadors puguin tornar a comprar les propietats sense les cases.
-
-- **Estratègia**: l'estratègia implementada és realment senzilla. Hi ha dues estratègies: Simple i Advanced, assignada a l'inici del joc la Simple als jugadors amb índex senar i la Advanced als jugadors amb índex parell. Els jugadors Advanced sempre mantenen unes reserves de diners (i per tant no compren si tot i tenir prou diners no són suficients per a mantenir-se per sobre de les reserves), i quan els seus diners baixen d'una certa quantitat, venen cases i propietats. En canvi, els jugadors Simple sempre que poden compren totes les propietats, no construeixen res, ni venen res.
-
-- **Mètode execute**: de manera similar al mètode land_on de les caselles, el mètode execute s'encarrega d'executar les accions correspondents a cada carta. D'igual manera, he fet servir el polimorfisme per a tenir un codi més net i intel·ligible
-
-- **Post-turn actions**: un cop complides les obligacions de la casella en què cau, s'itera sobre totes les propietats del jugador per a veure quines accions de post-torn hi pot realitzar. Per a no complicar més la cosa, la llista amb totes les propietats no està ordenada de cap manera específica, simplement està ordenada segons l'ordre d'addició a la llista.
-
-- **Go_Salary**: per tal de facilitar que la partida acabi en un número de partidews raonable, vaig decidir baixar el go_salary de 200$ a 50$, ja que si no la partida podia arribar a durar milers de torns. 
-
+---
 
 ## Joc de proves
-S'han inclòs una sèrie de jocs de proves per a garantitzar que totes les funcionalitats del Monopoly estiguin ben implementades, com per exemple el funcionament dels torns a la presó, el pagament del lloguer i l'hipoteca... Tots els tests segueixen una estructura molt similar. 
-
-- **Creació de la carpeta per guardar les imatges**: Es crea, si encara no exisitia, la carpeta output, en què s'emmagatzemen els fitxers .svg corresponents a cada test. Cada test individual substituirà la carpeta output si ja existia, per tant si es desitja veure gràficament què passa al test s'ha d'anar un per un.
-
-- **Input**: S'elimina l'input que es demana normalment a l'inici de la partida, i es subsitueix pel número de jugadors establert a cada test (normalment 2). 
-
-- **Condicions del test**: Es creen les condiciones necessàries per a poder dur a terme el test, com per exemple que un jugador comenci amb X diners, que ja tingui una propietat, que ja estigui a la presó, o que comenci en una casella determinada. A més a més, en aquells tests en què intervenen cartes de Chance o Community Chest, es força que la següent carta que s'esculli en robar de la baralla sigui la carta desitjada.
-
-- **Simulació dels daus**: Es crea una funció mock_randint que substituirà la funció random.randint que es crida a board en generar els nous daus. 
-
-- **Simulació alive_players**: Es crea una funció mock_alive_players, que substituirà el mètode alive_players de board quan es crida a board.play(), per a comprovar quants jugadors queden vius. D'aquesta manera, ens permetrà acabar la partida quan així ho desitgem.
-
-- **Execució de la partida de test i asserts**: S'executa la partida de test mitjançant tauler.play() i es fan servir els asserts pertinents per a comprovar que tot ha anat correctament. A cada assert s'adjunta un missatge d'error per si fos el cas que no es compleix la condició saber què és el que està fallant.
-
-
-## Instruccions
-- **Pas 1**: Executa el programa main.py i introdueix el nombre de jugadors (1-4) que dessitges a la partida. Veuràs que es crea una carpeta anomenada output en què es guarden totes les imatges dels taulells. 
-
-- **Pas 2**: 
-Posa aquesta comanda (o alguna cosa similar al teu ordenador) a la terminal per a crear el fitxer partida.html:
-**python3 src/slideshow.py partida.html output/tauler-*.svg.** 
-Si el teu ordenador és Windows i la comanda anterior no funciona, prova aquesta comanda:
-**python3 src/slideshow.py partida.html $(Get-ChildItem output/*.svg)**
-
-
-
-- **Pas 3**. Obre el fitxer partida.html des de l'explorador d'arxius al teu navegador
+ 
+Els tests es troben a `src/tests/` i s'executen amb `pytest`. Cada fitxer de test cobreix un àmbit específic:
+ 
+| Fitxer | Àmbit |
+|---|---|
+| `test_tiles.py` | Compra de propietats, construcció i venda de cases i hotels, lloguers diferenciats, hipoteques |
+| `test_cards.py` | Totes les accions de cartes de Chance i Community Chest, incloent casos de fallida |
+| `test_presó.py` | Entrada a presó, sortida per dobles, per carta, per tres torns; tres dobles seguits... |
+| `test_bancarrota.py` | Fallida envers el banc, envers un jugador, amb saldo zero i per culpa de carta |
+ 
+### Estructura estàndard de cada test
+ 
+1. **Creació de la carpeta `output/`**: es recrea per emmagatzemar els SVGs del test.
+2. **Mock d'`input`**: s'evita demanar el nombre de jugadors per consola.
+3. **Condicions inicials**: es fixa la posició, diners, propietats i cartes del jugador o jugadors que volem que participin en el test
+4. **Mock dels daus**: `random.randint` es substitueix per un iterador amb valors predefinits per a que els jugadors es moguin a on volguem.
+5. **Mock d'`alive_players`**: s'atura la partida després dels torns necessaris per al test.
+6. **Execució i asserts**: es crida `tauler.play()` i es comprova l'estat final amb missatges d'error que indiquen si hi ha hagut algun error.

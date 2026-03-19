@@ -29,8 +29,8 @@ class Board:
             data_tiles = json.load(json_tiles)
         self._tiles = [build_tile(self,item) for item in data_tiles]
     
-        self._chance = Deck(chance_json_path)
-        self._community = Deck(community_chest_json_path)
+        self._chance = Deck(chance_json_path,"chance")
+        self._community = Deck(community_chest_json_path,"community_chest")
 
         self._number_players = int(input('Number of players: ')) 
         assert 1 < self._number_players <= const.MAX_PLAYERS, '1 < number of players <= MAX_PLAYERS'
@@ -150,7 +150,7 @@ class Board:
         if comptador_dobles > 0:
             actual_player.release_from_prison()
             return True
-        elif actual_player.get_out_of_jail_free_cards() > 0:
+        elif actual_player.get_out_of_jail_free_cards() > 0:            
             actual_player.release_from_prison()
             actual_player.use_get_out_of_jail_card()
             return True

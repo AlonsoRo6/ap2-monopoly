@@ -265,3 +265,74 @@ def test_unmortgage():
 
     assert jugador.money() == 1500 - int(propietat.get_mortgage() * 1.1), "ERROR: No s'ha pagat el que s'hauria d'haver pagat per deshipotecar"
     assert not propietat.is_tile_mortgaged(), "ERROR: No s'ha deshipotecat la casella"
+
+
+def test_transfer_mortgaged_property_both_bankrupt():
+    '''Tenint una propietat hipotecada, cau en una propietat del rival i entra en fallida, 
+    però el rival no pot pagar ni el 10% i també entra en fallida'''
+    tauler,jugador = setup_test_scenario(38,'3',[2,1])
+
+    propietat = tauler.get_tile_index(39)
+    assert isinstance(propietat,Street)
+    jugador.new_property(propietat)
+    propietat.set_owner(jugador)
+    propietat.mortgage()
+
+    rival = tauler.players()[1]
+    prop_rival = tauler.get_tile_index(1)
+    assert isinstance(prop_rival,Street)
+    prop_rival.set_owner(rival)
+    rival.new_property(prop_rival)
+    jugador.add_money(-1499)
+    rival.add_money(-1499)
+    tauler.play()
+
+    assert jugador.is_bankrupt(), "ERROR: El jugador s'hauria d'haver arruinat"
+    assert rival.is_bankrupt(), "ERROR: El rival s'hauria d'haver arruinat"
+
+def test_transfer_mortgaged_property_and_unmortgage():
+    '''Tenint una propietat hipotecada, cau en una propietat del rival i entra en fallida, 
+    i el rival pot deshipotecar al moment'''
+    tauler,jugador = setup_test_scenario(38,'3',[2,1])
+
+    propietat = tauler.get_tile_index(39)
+    assert isinstance(propietat,Street)
+    jugador.new_property(propietat)
+    propietat.set_owner(jugador)
+    propietat.mortgage()
+
+    rival = tauler.players()[1]
+    prop_rival = tauler.get_tile_index(1)
+    assert isinstance(prop_rival,Street)
+    prop_rival.set_owner(rival)
+    rival.new_property(prop_rival)
+    jugador.add_money(-1499)
+    tauler.play()
+
+    assert jugador.is_bankrupt(), "ERROR: El jugador s'hauria d'haver arruinat"
+    assert len(rival.owned_properties()) == 2, "ERROR: S'hauria d'haver traspassat la propietat"
+    assert not propietat.is_tile_mortgaged(), "ERRRO: S'hauria d'haver deshipotecat"
+
+def test_transfer_mortgaged_property_and_keep_unmortgaged():
+    '''Tenint una propietat hipotecada, cau en una propietat del rival i entra en fallida, 
+    i el rival no pot deshipotecar-la però sçi que pot pagar el 10%'''
+    tauler,jugador = setup_test_scenario(38,'3',[2,1])
+
+    propietat = tauler.get_tile_index(39)
+    assert isinstance(propietat,Street)
+    jugador.new_property(propietat)
+    propietat.set_owner(jugador)
+    propietat.mortgage()
+
+    rival = tauler.players()[1]
+    prop_rival = tauler.get_tile_index(1)
+    assert isinstance(prop_rival,Street)
+    prop_rival.set_owner(rival)
+    rival.new_property(prop_rival)
+    jugador.add_money(-1499)
+    rival.add_money(-1450)
+    tauler.play()
+
+    assert jugador.is_bankrupt(), "ERROR: El jugador s'hauria d'haver arruinat"
+    assert len(rival.owned_properties()) == 2, "ERROR: S'hauria d'haver traspassat la propietat"
+    assert propietat.is_tile_mortgaged(), "ERRRO: No s'hauria d'haver deshipotecat, no té prou diners"

@@ -5,9 +5,11 @@ from strategy import *
 
 if TYPE_CHECKING:
     from board import Board
-    from tile import *
+    from tile import Tile, Street, Property
 
 from draw import draw
+from deck import Deck
+from card import *
 
 class Player:
     _board: Board
@@ -34,7 +36,7 @@ class Player:
         self._position = 0
         self._money = const.START_MONEY
         self._owned_properties:list[Property] = []
-        self._get_out_of_jail_free_cards = 0
+        self._get_out_of_jail_free_cards: list[tuple[Card,Deck]] = []
         self._in_prison = False
         self._turns_in_prison = 0
         self._bankruptcy = False
@@ -82,7 +84,7 @@ class Player:
 
     def get_out_of_jail_free_cards(self) -> int: 
         '''Returns the amount of get out of jail card the player has'''
-        return self._get_out_of_jail_free_cards
+        return len(self._get_out_of_jail_free_cards)
 
     def owned_properties(self) -> list[Property]: 
         '''Returns a list of Property with all properties owned by the player'''
@@ -172,13 +174,15 @@ class Player:
         '''Returns the amount of turns the player has spent in prison'''
         return self._turns_in_prison
     
-    def add_get_out_of_jail_card(self) -> None:
+    def add_get_out_of_jail_card(self, card:Get_Out_Of_Jail, deck:Deck) -> None:
         '''Method that adds one get out of jail card to this player'''
-        self._get_out_of_jail_free_cards += 1
+        self._get_out_of_jail_free_cards.append((card,deck))
 
     def use_get_out_of_jail_card(self) -> None:
-        '''Method that uses one of the get oout of jail cards of this player'''
-        self._get_out_of_jail_free_cards -= 1
+        '''Method that uses one of the get out of jail cards of this player'''
+        card, deck = self._get_out_of_jail_free_cards.pop()
+        deck.discard(card)
+        
 
     def put_in_prison(self) -> None:
         '''Method that "internally" puts in prison this player'''
@@ -213,7 +217,9 @@ class Player:
         '''When a player goes bankrupt to another player, all of its properties go to the other player'''
 
         for _ in range(self.get_out_of_jail_free_cards()): #traspassem les cartes per sortir de la presó
-            transfer_player.add_get_out_of_jail_card()
+            for (card,deck) in self._get_out_of_jail_free_cards:
+                assert isinstance(card,Get_Out_Of_Jail)
+                transfer_player.add_get_out_of_jail_card(card,deck)
 
         for property in self.owned_properties():
             property.set_owner(transfer_player)
@@ -243,7 +249,7 @@ class Player:
 
         self._money = 0
         self.owned_properties().clear()
-        self._get_out_of_jail_free_cards = 0
+        self._get_out_of_jail_free_cards = []
         board.eliminate_player()
         self._bankruptcy = True
 

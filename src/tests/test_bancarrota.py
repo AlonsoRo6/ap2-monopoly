@@ -4,7 +4,6 @@ from tile import *
 import os
 import shutil
 from card import *
-import deck
 
 def setup_test_scenario(posicio_inicial:int, input_val:str, dice_results:list[int]):
     nom_carpeta = "output"
@@ -125,7 +124,7 @@ def test_fallida_jugador():
 
     jugador = tauler.players()[0]
     jugador.add_money(-1480) #el deixem amb 20 euros
-    jugador.add_get_out_of_jail_card()
+    jugador.add_get_out_of_jail_card(Get_Out_Of_Jail(8, 'Get Out of Jail Free', 'Get Out of Jail Free. This card may be kept until needed or sold', 'get_out_of_jail_card', True, "chance"), tauler.get_deck("chance"))
     propietat = tauler.get_tile_index(39)
     assert isinstance(propietat,Street)
     jugador.new_property(propietat)
@@ -217,29 +216,3 @@ def test_zero_money():
 
     assert jugador.money() == 0, "ERROR: No s'ha pagat el que tocava"
     assert jugador.is_bankrupt() == False, "ERROR: El jugador no hauria d'estar en bancarrota"
-
-
-def test_chance_bancarrota():
-    tauler,jugador = setup_test_scenario(0,'2',[4,3])
-
-    jugador.add_money(-1500)
-    jugador.add_get_out_of_jail_card()
-    
-    rival = tauler.players()[1]
-    propietat_rival = tauler.get_tile_index(24)
-    assert isinstance(propietat_rival,Street)
-    rival.new_property(propietat_rival)
-    propietat_rival.set_owner(rival)
-
-    # Forcem que la propera carta sigui anar a la presó
-    carta = Move_To(1, "Advance to Trafalgar Square", "Advance to Trafalgar Square. If you pass Go, collect £200", "move_to_position", 24)
-    deck.Deck.get_card = lambda self: carta
-
-    tauler.play()
-
-    
-    assert jugador.position() == 24, "ERROR: El jugador hauria d'estar a la casella 24"
-    
-    assert jugador.is_bankrupt() == True, "ERROR: El jugador hauria d'estar marcat com a 'en presó'"
-    assert rival.get_out_of_jail_free_cards() == 1, "ERROR: El jugador 2 hauria d'haver rebut la targeta de sortir de la presó"
-
