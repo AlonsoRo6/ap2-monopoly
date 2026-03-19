@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from board import Board
 
 from typing import Any
+from draw import draw
 
 class Card:
 
@@ -59,6 +60,9 @@ class Move_To(Card):
     def execute(self, player:Player, board:Board) -> None:
         '''Executes the action instructed by the card'''
         player.move_to(self.get_position())
+        board.nou_numero_taulell()
+        filename = f"output/tauler-{board.numero_taulell() + 1:03d}.svg"
+        draw(board, filename)
         tile = board.get_tile_index(self.get_position())
         tile.land_on(player,1,board)
 
@@ -76,6 +80,9 @@ class Move_To_Station(Card):
         '''Makes the player go to the nearest station'''
         tile = player.find_next_tile_of_type(board,"station")
         player.move_to(tile.position())
+        board.nou_numero_taulell()
+        filename = f"output/tauler-{board.numero_taulell() + 1:03d}.svg"
+        draw(board, filename)
         tile.land_on(player,self.get_rent_multiplier(),board)
 
 class Move_To_Utility(Card):
@@ -91,6 +98,9 @@ class Move_To_Utility(Card):
         '''Makes the player go to the nearest utility'''
         tile = player.find_next_tile_of_type(board,"utility")
         player.move_to(tile.position())
+        board.nou_numero_taulell()
+        filename = f"output/tauler-{board.numero_taulell() + 1:03d}.svg"
+        draw(board, filename)
         tile.land_on(player,self.get_rent_multiplier(),board)
 
 class Get_Out_Of_Jail(Card):
@@ -113,6 +123,9 @@ class Move_Back(Card):
     def execute(self, player:Player, board:Board) -> None:
         '''Moves the player the amount of positions given back'''
         player.move_to(player.position()-self.get_spaces())
+        board.nou_numero_taulell()
+        filename = f"output/tauler-{board.numero_taulell() + 1:03d}.svg"
+        draw(board, filename)
         tile = board.get_tile_index(player.position())
         tile.land_on(player,1,board)
 
@@ -173,7 +186,7 @@ class Pay_Players(Card):
     def execute(self,player:Player,board:Board) -> None:
         '''Makes the player pay the amount of money instructed by the card to each remaining player'''
         if player.money() - self.get_amount() * (board.alive_players()-1) < 0: 
-            player.add_money(-150)
+            player.bankruptcy(None,board)
         else:
             for oponent in board.players():
                 if oponent != player and not oponent.is_bankrupt():
@@ -194,7 +207,7 @@ class Collect_Players(Card):
         for oponent in board.players():
             if oponent != player and not oponent.is_bankrupt():
                 if oponent.money() - self.get_amount() < 0:
-                    oponent.bankruptcy(None,board)
+                    oponent.bankruptcy(player,board)
                 else:
                     oponent.add_money(-self.get_amount())
                     player.add_money(+self.get_amount())

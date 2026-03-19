@@ -91,6 +91,37 @@ def test_move_to() -> None:
     ), "ERROR: No s'ha executat correctament l'acció de la casella"
 
 
+def test_move_to_and_bankrupt() -> None:
+    """Test de les cartes d'acció move_to_position"""
+    tauler, jugador = setup_test_scenario(19, "2")
+    
+    jugador.add_money(-1499)
+
+    rival = tauler.players()[1]
+    prop_rival = tauler.get_tile_index(24)
+    assert isinstance(prop_rival, Street)
+    rival.new_property(prop_rival)
+    prop_rival.set_owner(rival)
+
+    # Forcem que la propera carta sigui anar a la presó
+    carta = Move_To(
+        1, "Advance to Trafalgar Square", "Advance to Trafalgar Square. If you pass Go, collect £200", "move_to_position", 24
+    )
+    deck.Deck.get_card = lambda self: carta
+
+    tauler.play()
+
+    assert (
+        jugador.position() == 24
+    ), "ERROR: El jugador no s'ha mogut a on hauria d'haver anat"
+    assert (
+        jugador.money() == 0
+    ), "ERROR: No s'ha executat correctament l'acció de la casella"
+    assert jugador.is_bankrupt(), "ERROR: El jugador hauria d'estar en bancarrota"
+    assert rival.money() == 1501, "ERROR: No 's'ha traspassat correctament els diners"
+
+
+
 def test_move_to_station() -> None:
     """Test de les cartes d'acció move_to_nearest_station"""
     tauler, jugador = setup_test_scenario(19, "2")
@@ -149,7 +180,7 @@ def test_move_to_utility() -> None:
         jugador.position() == 28
     ), "ERROR: El jugador no s'ha mogut a on hauria d'haver anat"
     assert (
-        jugador.money() == 1500 - propietat_rival.get_rent() * 10
+        jugador.money() == 1500 - 3*10
     ), "ERROR: No s'ha executat correctament l'acció de la casella"
 
 
@@ -420,7 +451,7 @@ def test_collect_players() -> None:
     ), "ERROR: El jugador 2 no ha pagat"
 
 
-def test_collect_players_bakrupt():
+def test_collect_players_bankrupt():
     """Test de les cartes d'acció collect_each_player"""
     tauler, jugador = setup_test_scenario(14, "3")
 
@@ -437,14 +468,17 @@ def test_collect_players_bakrupt():
         50,
     )
     deck.Deck.get_card = lambda self: carta
-
+    diners_rival1 = rival1.money()
     tauler.play()
 
     assert (
-        jugador.money() == 1500 + carta.get_amount()
+        jugador.money() == 1500 + carta.get_amount() + diners_rival1
     ), "ERROR: No s'ha rebut el que s'hauria d'haver rebut"
-    assert rival1.money() == 0, "ERROR: el jugador 1 no ha pagat"
+    
+    assert rival1.money() == 0, "ERROR: el jugador 1 hauria de tenir 0$"
+    
     assert rival1.is_bankrupt(), "ERROR: el jugador 1 hauria d'estar en bancarrota"
+    
     assert (
         rival2.money() == 1500 - carta.get_amount()
     ), "ERROR: El jugador 2 no ha pagat"

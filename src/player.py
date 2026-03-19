@@ -39,16 +39,15 @@ class Player:
         self._turns_in_prison = 0
         self._bankruptcy = False
 
-        self._colors = ['brown','light_blue','pink','orange','red','yellow','green','dark_blue']
-        self._color_sets: dict[str,list[Street]] = {color:[] for color in self._colors}
-        self._full_color_sets: dict[str,int] = {color:sum(1 for t in self.board().tiles() if getattr(t, "color", None) == color) for color in self._colors}
+        self._color_sets: dict[str,list[Street]] = {color:[] for color in const.COLORS}
+        self._full_color_sets: dict[str,int] = {color:sum(1 for t in self.board().tiles() if getattr(t, "color", None) == color) for color in const.COLORS}
         self._amount_stations = 0
         self._amount_utilities = 0
 
         if self._index % 2 == 0:
-            self._strategy = "Advanced"
+            self._strategy: Strategy = AdvancedStrategy()
         else:
-            self._strategy = "Simple"
+            self._strategy: Strategy = SimpleStrategy()
 
 
     def board(self) -> Board: return self._board
@@ -128,7 +127,7 @@ class Player:
         '''Method that moves a player to a given position'''
         self._position = go_position
 
-    def strategy(self) -> str:
+    def strategy(self) -> Strategy:
         '''Returns a string with the name of the player's strategy'''
         return self._strategy
 
@@ -136,20 +135,20 @@ class Player:
         '''Method that executes the post-turn actions if necessary'''
         for property in self.owned_properties():
             from tile import Street
-            if isinstance(property,Street) and should_build_house(self,property): #build house
+            if isinstance(property,Street) and self.strategy().should_build_house(self,property): #build house
                 self.add_money(-property.get_house_cost())
                 property.buy_house()
                 
             if isinstance(property,Street) and property.amount_houses() > 0: #sell house
-                while should_sell_house(self,property):
+                while self.strategy().should_sell_house(self,property):
                     self.add_money(property.get_house_sell_price())
                     property.sell_house()
             
-            if should_mortgage_property(self, property): #mortgage
+            if self.strategy().should_mortgage_property(self, property): #mortgage
                 self.add_money(property.get_mortgage())
                 property.mortgage()
             
-            if property.is_tile_mortgaged() and should_unmortgage_property(self,property): #unmortgage
+            if property.is_tile_mortgaged() and self.strategy().should_unmortgage_property(self,property): #unmortgage
                 self.add_money(-property.get_unmortgage_price())
                 property.unmortgage()
 

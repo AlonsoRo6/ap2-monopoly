@@ -122,7 +122,7 @@ class Property(Tile):
         '''Handles what happens when a player lands on a property'''
         owner = self.get_owner()
         if owner == None:
-            if should_buy_property(player,self):
+            if player.strategy().should_buy_property(player,self):
                 player.add_money(-self.get_price())
                 player.new_property(self)
                 self.set_owner(player)
@@ -318,6 +318,25 @@ class Utility(Property):
             return sum(self.board().dice()) * 10
         else: 
             return sum(self.board().dice()) * 4
+        
+    def land_on(self, player: Player, rent_multiplier: int, board: Board) -> None:
+        '''Handles landing on a utility. rent_multiplier is only greater than 1 when 
+        coming form a chance card, and it replaces the normal multiplier entirely'''
+        owner = self.get_owner()
+        if owner is None:
+            if player.strategy().should_buy_property(player, self):
+                player.add_money(-self.get_price())
+                player.new_property(self)
+                self.set_owner(player)
+        elif owner != player:
+            if not self.is_tile_mortgaged():
+                dice_total = sum(board.dice())
+                if rent_multiplier > 1:
+                    rent = dice_total * rent_multiplier
+                else:
+                    rent = dice_total * self.get_rent()
+                owner.add_money(rent)
+                player.add_money(-rent)
 
 
 class Tax(Tile):
